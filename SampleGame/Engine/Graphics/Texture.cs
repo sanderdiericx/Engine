@@ -47,6 +47,23 @@ namespace SampleGame.Engine.Graphics
             return new Texture(handle);
         }
 
+        public static string FindTextureFilePath(string textureName)
+        {
+            string texturePath = "";
+
+            // Search through the Assets directory to find the path to the texture name
+            string assetsPath = Path.Combine(AppContext.BaseDirectory, "Assets");
+            foreach (var file in Directory.EnumerateFiles(assetsPath, "*", SearchOption.AllDirectories))
+            {
+                if (Path.GetFileName(file) == textureName)
+                {
+                    texturePath = file;
+                }
+            }
+
+            return texturePath;
+        }
+
         public void Use(TextureUnit unit)
         {
             GL.ActiveTexture(unit);

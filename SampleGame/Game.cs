@@ -4,8 +4,7 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using SampleGame.Engine.Content;
-using SampleGame.Engine.Graphics;
-
+using SampleGame.Engine.Core;
 
 namespace SampleGame
 {
@@ -24,8 +23,11 @@ namespace SampleGame
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
             ResourceLoader.Instance.LoadAsset(@"C:\Users\sande\source\repos\SampleGame\SampleGame\Assets\erato.obj");
+            ResourceLoader.Instance.LoadAsset(@"C:\Users\sande\source\repos\SampleGame\SampleGame\Assets\erato.mtl");
 
-            Mesh model = new Mesh("erato.obj");
+            Model model = new Model("erato.obj", "erato.mtl");
+
+            Console.WriteLine("Parsing success!");
         }
 
         // Game unloading logic goes here
