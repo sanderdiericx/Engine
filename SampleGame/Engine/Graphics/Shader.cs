@@ -1,0 +1,122 @@
+﻿using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
+using OpenTK.Windowing.Common;
+using OpenTK.Windowing.Desktop;
+using OpenTK.Windowing.GraphicsLibraryFramework;
+
+namespace SampleGame.Engine.Graphics
+{
+    public class Shader : IDisposable
+    {
+        private bool disposedValue = false;
+        public int Handle;
+
+        public Shader(string vertexPath, string fragmentPath)
+        {
+            // define 2 handles to the shaders
+            int VertexShader, FragmentShader;
+
+            // read the shader texts
+            string VertexShaderSource = File.ReadAllText(vertexPath);
+            string FragmentShaderSource = File.ReadAllText(fragmentPath);
+
+            // bind the source code to the shaders
+            VertexShader = GL.CreateShader(ShaderType.VertexShader);
+            GL.ShaderSource(VertexShader, VertexShaderSource);
+
+            FragmentShader = GL.CreateShader(ShaderType.FragmentShader);
+            GL.ShaderSource(FragmentShader, FragmentShaderSource);
+
+            // compile and check for errors
+            int success;
+
+            GL.CompileShader(VertexShader);
+            GL.GetShader(VertexShader, ShaderParameter.CompileStatus, out success);
+            if (success == 0)
+            {
+
+                string infoLog = GL.GetShaderInfoLog(VertexShader);
+                Console.WriteLine(infoLog);
+            }
+
+            GL.CompileShader(FragmentShader);
+            GL.GetShader(FragmentShader, ShaderParameter.CompileStatus, out success);
+            if (success == 0)
+            {
+                string infoLog = GL.GetShaderInfoLog(FragmentShader);
+                Console.WriteLine(FragmentShader);
+            }
+
+            // link the shaders together into the handle
+            Handle = GL.CreateProgram();
+
+            GL.AttachShader(Handle, VertexShader);
+            GL.AttachShader(Handle, FragmentShader);
+
+            GL.LinkProgram(Handle);
+
+            // check for errors
+            GL.GetProgram(Handle, GetProgramParameterName.LinkStatus, out success);
+            if (success == 0)
+            {
+                string infoLog = GL.GetProgramInfoLog(Handle);
+                Console.WriteLine(infoLog);
+            }
+
+            // cleanup
+            GL.DetachShader(Handle, VertexShader);
+            GL.DetachShader(Handle, FragmentShader);
+            GL.DeleteShader(VertexShader);
+            GL.DeleteShader(FragmentShader);
+        }
+
+        public int GetAttribLocation(string attribName)
+        {
+            return GL.GetAttribLocation(Handle, attribName);
+        }
+
+        public void Use()
+        {
+            GL.UseProgram(Handle);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                GL.DeleteProgram(Handle);
+
+                disposedValue = true;
+            }
+        }
+
+        // asign a integer to a uniform
+        public void SetInt(string name, int value)
+        {
+            int location = GL.GetUniformLocation(Handle, name);
+            GL.Uniform1(location, value);
+        }
+
+        // asign a matrix to a uniform
+        public void SetMatrix4(string name, Matrix4 matrix)
+        {
+            int location = GL.GetUniformLocation(Handle, name);
+            GL.UniformMatrix4(location, true, ref matrix);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this); // stop the gc from cleaning up resources, as we already cleaned it up
+        }
+
+        // runs when shader is collected buy garbage collection
+        ~Shader()
+        {
+            if (disposedValue == false)
+            {
+                Console.WriteLine("GPU Resource leak! did you forget to call Dispose()?");
+            }
+        }
+    }
+}
