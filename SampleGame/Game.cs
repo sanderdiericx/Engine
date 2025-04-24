@@ -26,8 +26,6 @@ namespace SampleGame
             ResourceLoader.Instance.LoadAsset(@"C:\Users\sande\source\repos\SampleGame\SampleGame\Assets\erato.obj");
 
             Mesh model = new Mesh("erato.obj");
-
-
         }
 
         // Game unloading logic goes here
