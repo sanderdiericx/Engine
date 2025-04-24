@@ -1,11 +1,5 @@
-﻿using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
-using OpenTK.Windowing.Common;
-using OpenTK.Windowing.Desktop;
-using OpenTK.Windowing.GraphicsLibraryFramework;
-using SampleGame.Engine.Content;
+﻿using OpenTK.Mathematics;
 using SampleGame.Engine.Graphics;
-using System.Globalization;
 
 namespace SampleGame.Engine.Utilities
 {
@@ -99,7 +93,7 @@ namespace SampleGame.Engine.Utilities
                     catch
                     {
                         Console.WriteLine($"ParseMTL: parsing error at line {i + 1}. Material may be incomplete.");
-                    } 
+                    }
                 }
                 else if (line.StartsWith("d "))
                 {

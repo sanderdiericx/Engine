@@ -3,12 +3,14 @@ using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using SampleGame.Engine.Graphics;
 
 namespace SampleGame.Engine.Core
 {
     public class Window : GameWindow
     {
         private readonly Game _game;
+        public Shader Shader;
 
         public Window(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings)
             : base(gameWindowSettings, nativeWindowSettings)
@@ -20,6 +22,8 @@ namespace SampleGame.Engine.Core
         {
             base.OnLoad();
             _game.OnLoad();
+
+            Shader = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
         }
 
         protected override void OnUnload()
