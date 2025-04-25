@@ -1,13 +1,8 @@
-﻿using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
-using OpenTK.Windowing.Common;
-using OpenTK.Windowing.Desktop;
-using OpenTK.Windowing.GraphicsLibraryFramework;
-using SampleGame.Engine.Content;
+﻿using OpenTK.Mathematics;
 
 namespace SampleGame.Engine.Graphics
 {
-    public class Material
+    internal class Material
     {
         public string MaterialName;
         public Vector3 Ka;

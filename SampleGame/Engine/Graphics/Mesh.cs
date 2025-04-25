@@ -1,12 +1,10 @@
-﻿using OpenTK.Mathematics;
-using OpenTK.Graphics.OpenGL4;
+﻿using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
 using SampleGame.Engine.Core;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.Intrinsics.X86;
 
 namespace SampleGame.Engine.Graphics
 {
-    public class Mesh
+    internal class Mesh
     {
         public int VertexArrayObject;
         public int VertexBufferObject;

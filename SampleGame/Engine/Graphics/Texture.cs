@@ -1,13 +1,10 @@
 ﻿using OpenTK.Graphics.OpenGL4;
-using System.Drawing;
-using System.Drawing.Imaging;
-using PixelFormat = OpenTK.Graphics.OpenGL4.PixelFormat;
 using StbImageSharp;
-using System.IO;
+using PixelFormat = OpenTK.Graphics.OpenGL4.PixelFormat;
 
 namespace SampleGame.Engine.Graphics
 {
-    public class Texture
+    internal class Texture
     {
         public readonly int Handle;
 

@@ -3,7 +3,7 @@ using SampleGame.Engine.Graphics;
 
 namespace SampleGame.Engine.Utilities
 {
-    public class ModelUtilities
+    internal class ModelUtilities
     {
         public static List<Material> ParseMTL(string[] data)
         {

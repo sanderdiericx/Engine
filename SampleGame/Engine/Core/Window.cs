@@ -1,8 +1,6 @@
 ﻿using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
-using OpenTK.Windowing.GraphicsLibraryFramework;
 using SampleGame.Engine.Graphics;
 
 namespace SampleGame.Engine.Core
@@ -37,7 +35,7 @@ namespace SampleGame.Engine.Core
             base.OnRenderFrame(args);
             _game.OnRenderFrame();
 
-            // swap between buffers
+            // Swap between buffers
             SwapBuffers();
         }
 
