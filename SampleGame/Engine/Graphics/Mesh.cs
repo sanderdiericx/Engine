@@ -1,6 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-using SampleGame.Engine.Core;
 
 namespace SampleGame.Engine.Graphics
 {

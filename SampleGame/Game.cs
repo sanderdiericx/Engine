@@ -1,53 +1,34 @@
 ﻿using OpenTK.Graphics.OpenGL4;
-using OpenTK.Windowing.GraphicsLibraryFramework;
-using SampleGame.Engine.Content;
+using OpenTK.Windowing.Common;
 using SampleGame.Engine.Core;
 
 namespace SampleGame
 {
-    public class Game
+    class Game : IGame
     {
-        private readonly Engine.Core.Window _window;
-
-        public Game(Engine.Core.Window window)
-        {
-            _window = window;
-        }
-
-        // Game loading logic goes here
-        public void OnLoad()
+        void IGame.OnLoad()
         {
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-
-            ResourceLoader.Instance.LoadAsset(@"C:\Users\sande\source\repos\SampleGame\SampleGame\Assets\erato.obj");
-            ResourceLoader.Instance.LoadAsset(@"C:\Users\sande\source\repos\SampleGame\SampleGame\Assets\erato.mtl");
-
-            Model model = new Model("erato.obj", "erato.mtl");
-
-            Console.WriteLine("Parsing success!");
         }
 
-        // Game unloading logic goes here
-        public void OnUnload()
+        void IGame.OnUnload()
         {
-
+            
         }
 
-        // Render logic goes here
-        public void OnRenderFrame()
+        void IGame.OnRenderFrame(FrameEventArgs args)
         {
             GL.Clear(ClearBufferMask.ColorBufferBit);
         }
 
-        // Update logic goes here
-        public void OnUpdateFrame()
+        void IGame.OnUpdateFrame(FrameEventArgs args)
         {
-            var input = _window.KeyboardState;
+            
+        }
 
-            if (input.IsKeyDown(Keys.Escape))
-            {
-                _window.Close();
-            }
+        void IGame.OnResize(ResizeEventArgs e)
+        {
+            
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using OpenTK.Mathematics;
-using OpenTK.Windowing.Desktop;
-using SampleGame.Engine.Core;
+﻿using SampleGame.Engine.Core;
 
 namespace SampleGame
 {
@@ -8,16 +6,7 @@ namespace SampleGame
     {
         static void Main(string[] args)
         {
-            var nativeWindowSettings = new NativeWindowSettings()
-            {
-                ClientSize = new Vector2i(800, 600),
-                Title = "Test",
-            };
-
-            using (var window = new Window(GameWindowSettings.Default, nativeWindowSettings))
-            {
-                window.Run();
-            }
+            Engine.Core.Engine.Run<Game>(new WindowSettings(800, 600, "test", false, false));
         }
     }
 }
