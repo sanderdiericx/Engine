@@ -24,6 +24,9 @@ namespace SampleGame.Engine.Core
             _normals = output.Item3;
 
             _materials = ModelUtilities.ParseMTL(dataMtl);
+
+
+            Console.WriteLine("Parsed!!! :P");
         }
     }
 }
