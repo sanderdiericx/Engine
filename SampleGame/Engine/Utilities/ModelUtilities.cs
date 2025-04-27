@@ -47,132 +47,64 @@ namespace SampleGame.Engine.Utilities
                 }
                 else if (line.StartsWith("Ns "))
                 {
-                    try
-                    {
-                        ns = float.Parse(line.Substring(3));
-                    }
-                    catch
+                    if (!float.TryParse(line.Substring("Ns ".Length), out ns))
                     {
                         Console.WriteLine($"ParseMTL: parsing error at line {i + 1}. Material may be incomplete.");
+                        ns = 0;
                     }
                 }
                 else if (line.StartsWith("Ka "))
                 {
-                    string[] lineData = line.Substring(3).Split(' ');
-
-                    try
-                    {
-                        ka = new Vector3(float.Parse(lineData[0]), float.Parse(lineData[1]), float.Parse(lineData[2]));
-                    }
-                    catch
-                    {
-                        Console.WriteLine($"ParseMTL: parsing error at line {i + 1}. Material may be incomplete.");
-                    }
+                    ka = ParseVector3(line, "Ka ");
                 }
                 else if (line.StartsWith("Kd "))
                 {
-                    string[] lineData = line.Substring(3).Split(' ');
-
-                    try
-                    {
-                        kd = new Vector3(float.Parse(lineData[0]), float.Parse(lineData[1]), float.Parse(lineData[2]));
-                    }
-                    catch
-                    {
-                        Console.WriteLine($"ParseMTL: parsing error at line {i + 1}. Material may be incomplete.");
-                    }
+                    kd = ParseVector3(line, "Kd ");
                 }
                 else if (line.StartsWith("Ks "))
                 {
-                    string[] lineData = line.Substring(3).Split(' ');
-
-                    try
-                    {
-                        ks = new Vector3(float.Parse(lineData[0]), float.Parse(lineData[1]), float.Parse(lineData[2]));
-                    }
-                    catch
-                    {
-                        Console.WriteLine($"ParseMTL: parsing error at line {i + 1}. Material may be incomplete.");
-                    }
+                    ks = ParseVector3(line, "Ks ");
                 }
                 else if (line.StartsWith("d "))
                 {
-                    try
-                    {
-                        opacity = float.Parse(line.Substring(2));
-                    }
-                    catch
+                    if (!float.TryParse(line.Substring("d ".Length), out opacity))
                     {
                         Console.WriteLine($"ParseMTL: parsing error at line {i + 1}. Material may be incomplete.");
+                        opacity = 0;
                     }
                 }
                 else if (line.StartsWith("Tr"))
                 {
-                    try
-                    {
-                        // Transparency is the opposite of dissolve
-                        opacity = 1.0f - float.Parse(line.Substring(3));
-                    }
-                    catch
+                    if (!float.TryParse(line.Substring("Tr ".Length), out opacity))
                     {
                         Console.WriteLine($"ParseMTL: parsing error at line {i + 1}. Material may be incomplete.");
+                        opacity = 0;
+                    }
+                    else
+                    {
+                        // Transparency is the opposite of dissolve
+                        opacity = 1.0f - opacity;
                     }
                 }
                 else if (line.StartsWith("illum "))
                 {
-                    try
-                    {
-                        illum = int.Parse(line.Substring(6));
-                    }
-                    catch
+                    if (!int.TryParse(line.Substring("illum ".Length), out illum))
                     {
                         Console.WriteLine($"ParseMTL: parsing error at line {i + 1}. Material may be incomplete.");
+                        illum = 0;
                     }
                 }
                 else if (line.StartsWith("map_Kd "))
                 {
-                    string textureName = line.Substring(7);
-
-                    string texturePath = Texture.FindTextureFilePath(textureName);
-
-                    if (texturePath != "")
-                    {
-                        diffuseMap = Texture.LoadFromFile(texturePath);
-                    }
-                    else
-                    {
-                        Console.WriteLine($"CreateTexture: the texture {textureName} was not found in the Assets folder.");
-                    }
+                    diffuseMap = ParseTexture(line, "map_Kd");
                 }
                 else if (line.StartsWith("map_Ks "))
                 {
-                    string textureName = line.Substring(7);
-
-                    string texturePath = Texture.FindTextureFilePath(textureName);
-
-                    if (texturePath != "")
-                    {
-                        specularMap = Texture.LoadFromFile(texturePath);
-                    }
-                    else
-                    {
-                        Console.WriteLine($"CreateTexture: the texture {textureName} was not found in the Assets folder.");
-                    }
+                    specularMap = ParseTexture(line, "map_Ks");
                 }
                 else if (line.StartsWith("map_Kn "))
                 {
-                    string textureName = line.Substring(7);
-
-                    string texturePath = Texture.FindTextureFilePath(textureName);
-
-                    if (texturePath != "")
-                    {
-                        normalMap = Texture.LoadFromFile(texturePath);
-                    }
-                    else
-                    {
-                        Console.WriteLine($"CreateTexture: the texture {textureName} was not found in the Assets folder.");
-                    }
+                    normalMap = ParseTexture(line, "map_Kn");
                 }
             }
 
@@ -191,46 +123,70 @@ namespace SampleGame.Engine.Utilities
 
                 if (line.StartsWith("v "))
                 {
-                    string[] lineData = line.Substring(2).Split(' ');
-
-                    try
-                    {
-                        vertices.Add(new Vector3(float.Parse(lineData[0]), float.Parse(lineData[1]), float.Parse(lineData[2])));
-                    }
-                    catch
-                    {
-                        Console.WriteLine($"ParseOBJ: parsing error at line {i + 1}. Mesh may be incomplete.");
-                    }
+                    vertices.Add(ParseVector3(line, "v "));
                 }
                 else if (line.StartsWith("vt "))
                 {
-                    string[] lineData = line.Substring(3).Split(' ');
-
-                    try
-                    {
-                        textureCoordinates.Add(new Vector2(float.Parse(lineData[0]), float.Parse(lineData[1])));
-                    }
-                    catch
-                    {
-                        Console.WriteLine($"ParseOBJ: parsing error at line {i + 1}. Mesh may be incomplete.");
-                    }
+                    textureCoordinates.Add(ParseVector2(line, "vt "));
                 }
                 else if (line.StartsWith("vn "))
                 {
-                    string[] lineData = line.Substring(3).Split(' ');
-
-                    try
-                    {
-                        normals.Add(new Vector3(float.Parse(lineData[0]), float.Parse(lineData[1]), float.Parse(lineData[2])));
-                    }
-                    catch
-                    {
-                        Console.WriteLine($"ParseOBJ: parsing error at line {i + 1}. Mesh may be incomplete.");
-                    }
+                    normals.Add(ParseVector3(line, "vn "));
                 }
             }
 
             return (vertices, textureCoordinates, normals);
+        }
+
+        private static Texture ParseTexture(string line, string name)
+        {
+            string textureName = line.Substring(name.Length).Trim();
+
+            string texturePath = Texture.FindTextureFilePath(textureName);
+
+            if (texturePath != "")
+            {
+                return Texture.LoadFromFile(texturePath);
+            }
+            else
+            {
+                Console.WriteLine($"ParseTexture: the texture {textureName} was not found in the Assets folder.");
+                return null;
+            }
+        }
+
+        // Parses a line into a vector 3, expects 3 float values
+        private static Vector3 ParseVector3(string line, string name)
+        {
+            string[] data = line.Substring(name.Length).Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            float f1, f2, f3;
+
+            if (!float.TryParse(data[0], out f1) || !float.TryParse(data[1], out f2) || !float.TryParse(data[2], out f3))
+            {
+                Console.WriteLine($"ParseVector3: parsing error. Line: {line}");
+
+                return Vector3.Zero;
+            }
+
+            return new Vector3(f1, f2, f3);
+        }
+
+        // Parses a line into a vector 2, expects 2 float values
+        private static Vector2 ParseVector2(string line, string name)
+        {
+            string[] data = line.Substring(name.Length).Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            float f1, f2;
+
+            if (!float.TryParse(data[0], out f1) || !float.TryParse(data[1], out f2))
+            {
+                Console.WriteLine($"ParseVector2: parsing error. Line: {line}");
+
+                return Vector2.Zero;
+            }
+
+            return new Vector2(f1, f2);
         }
 
         private static void ResetMaterialParamaters(ref string materialName, ref Vector3 ka, ref Vector3 kd, ref Vector3 ks, ref float ns, ref float opacity, ref int illum, ref Texture diffuseMap, ref Texture specularMap, ref Texture normalMap)

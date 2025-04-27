@@ -28,15 +28,15 @@
             }
             else if (LoadedAssets.ContainsKey(fileName)) // Duplicate filename
             {
-                Console.WriteLine($"LoadFile: {fileName} is already used. Please use another name.");
+                Console.WriteLine($"LoadAsset: {fileName} is already used. Please use another name.");
             }
             else if (!_supportedExtensions.Contains(extension)) // File type was invalid
             {
-                Console.WriteLine($"LoadFile: the file type ({extension}) is not yet supported directly");
+                Console.WriteLine($"LoadAsset: the file type ({extension}) is not yet supported directly for model loading. File was skipped. ({fileName})");
             }
             else // File was not found
             {
-                Console.WriteLine($"LoadFile: {filePath} was not found and thus could not be loaded.");
+                Console.WriteLine($"LoadAsset: {filePath} was not found and thus could not be loaded.");
             }
         }
 
