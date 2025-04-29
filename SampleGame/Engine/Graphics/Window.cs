@@ -10,11 +10,20 @@ namespace SampleGame.Engine.Graphics
         public Shader Shader;
         private IGame _game;
 
+        public int SizeX;
+        public int SizeY;
+
         public Window(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings, IGame game)
             : base(gameWindowSettings, nativeWindowSettings)
         {
             _game = game;
+            
             Shader = new Shader("Engine/Graphics/Shaders/shader.vert", "Engine/Graphics/Shaders/shader.frag");
+            Shader.Use();
+            Shader.SetInt("texture1", 0);
+
+            SizeX = Size.X;
+            SizeY = Size.Y;
         }
 
         protected override void OnLoad()
@@ -22,6 +31,9 @@ namespace SampleGame.Engine.Graphics
             base.OnLoad();
 
             _game.OnLoad();
+
+            GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+            GL.Enable(EnableCap.DepthTest);
         }
 
         protected override void OnUnload()
@@ -34,6 +46,8 @@ namespace SampleGame.Engine.Graphics
         protected override void OnRenderFrame(FrameEventArgs args)
         {
             base.OnRenderFrame(args);
+            
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             _game.OnRenderFrame(args);
 
@@ -53,6 +67,9 @@ namespace SampleGame.Engine.Graphics
             base.OnResize(e);
 
             _game.OnResize(e);
+
+            SizeX = Size.X;
+            SizeY = Size.Y;
 
             GL.Viewport(0, 0, Size.X, Size.Y); // Make sure the viewport gets properly changed
         }

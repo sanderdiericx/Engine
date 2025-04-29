@@ -9,41 +9,20 @@ namespace SampleGame.Engine.Graphics
         public int VertexBufferObject;
         public int ElementBufferObject;
 
-        public Mesh(Window window, List<Vector3> vertices, List<Vector2> textureCoordinates, List<Vector3> normals)
+        public float[] UniqueVertexBuffer;
+        public uint[] Indices;
+
+        public Mesh(List<Vector3> vertices, List<Vector2> textureCoordinates, List<Vector3> normals)
         {
             float[] vertexData = GetInterleavedVertexData(vertices, textureCoordinates, normals);
 
             (float[], uint[]) uniqueData = GetIndices(vertexData);
 
-            VertexArrayObject = GL.GenVertexArray();
-            GL.BindVertexArray(VertexArrayObject);
-
-            VertexBufferObject = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, VertexBufferObject);
-            GL.BufferData(BufferTarget.ArrayBuffer, uniqueData.Item1.Length * sizeof(float), uniqueData.Item1, BufferUsageHint.StaticDraw);
-
-            ElementBufferObject = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ElementBufferObject);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, uniqueData.Item2.Length * sizeof(uint), uniqueData.Item2, BufferUsageHint.StaticDraw);
-
-            int stride = 8 * sizeof(float);
-
-            var vertexLocation = window.Shader.GetAttribLocation("aPosition");
-            GL.EnableVertexAttribArray(vertexLocation);
-            GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false, stride, 0);
-
-            var normalLocation = window.Shader.GetAttribLocation("aNormal");
-            GL.EnableVertexAttribArray(normalLocation);
-            GL.VertexAttribPointer(normalLocation, 3, VertexAttribPointerType.Float, false, stride, 3 * sizeof(float));
-
-            var texCoordLocation = window.Shader.GetAttribLocation("aTexcoord");
-            GL.EnableVertexAttribArray(texCoordLocation);
-            GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, stride, 6 * sizeof(float));
-
-            GL.BindVertexArray(0);
+            UniqueVertexBuffer = uniqueData.Item1;
+            Indices = uniqueData.Item2;
         }
 
-        // TO DO: Optimize dictionary lookup by switching key and val order
+        // TO DO: Optimize dictionary lookup by switching key and val order (maybe put in hash table)
         // Returns a list of indices and a unique vertex buffer to draw by eliminating duplicates, expects a float array with vertex positions, normals and texture coordinates
         private static (float[], uint[]) GetIndices(float[] vertexData)
         {
@@ -52,7 +31,7 @@ namespace SampleGame.Engine.Graphics
             List<Vector2> textureCoordinates = new List<Vector2>();
 
             List<uint> indices = new List<uint>();
-            Dictionary<uint, (Vector3, Vector3, Vector2)> foundCombos = new Dictionary<uint, (Vector3, Vector3, Vector2)>();
+            Dictionary<string, uint> foundCombos = new Dictionary<string, uint>();
 
             uint indexCount = 0;
 
@@ -62,11 +41,11 @@ namespace SampleGame.Engine.Graphics
                 Vector3 normal = new Vector3(vertexData[i + 3], vertexData[i + 4], vertexData[i + 5]);
                 Vector2 textureCoordinate = new Vector2(vertexData[i + 6], vertexData[i + 7]);
 
-                (Vector3, Vector3, Vector2) combo = (vertex, normal, textureCoordinate);
+                string comboKey = $"{vertex.X},{vertex.Y},{vertex.Z},{normal.X},{normal.Y},{normal.Z},{textureCoordinate.X},{textureCoordinate.Y}";
 
-                if (!foundCombos.ContainsValue(combo))
+                if (!foundCombos.TryGetValue(comboKey, out uint existingIndex))
                 {
-                    foundCombos.Add(indexCount, combo);
+                    foundCombos.Add(comboKey, indexCount);
 
                     indices.Add(indexCount);
                     indexCount++;
@@ -77,17 +56,7 @@ namespace SampleGame.Engine.Graphics
                 }
                 else
                 {
-                    // Find the indexCount associated with this combo
-                    uint index = 0;
-                    foreach (var (key, value) in foundCombos)
-                    {
-                        if (value == combo)
-                        {
-                            index = key;
-                        }
-                    }
-
-                    indices.Add(index);
+                    indices.Add(existingIndex);
                 }
             }
 

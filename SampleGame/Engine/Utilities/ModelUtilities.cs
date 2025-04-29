@@ -1,10 +1,104 @@
-﻿using OpenTK.Mathematics;
+﻿using OpenTK.Graphics.ES11;
+using OpenTK.Mathematics;
 using SampleGame.Engine.Graphics;
 
 namespace SampleGame.Engine.Utilities
 {
     internal class ModelUtilities
     {
+        public static Dictionary<Material, Mesh> GetMeshes(string[] data, List<Vector3> vertices, List<Vector3> normals, List<Vector2> textureCoordinates, List<Material> materials)
+        {
+            Dictionary<Material, Mesh> meshes = new Dictionary<Material, Mesh>();
+
+            List<Vector3> currentVertices = new List<Vector3>();
+            List<Vector3> currentNormals = new List<Vector3>();
+            List<Vector2> currentTextureCoordinates = new List<Vector2>();
+
+            Material currentMaterial = materials[0];
+            bool isFirstMaterial = true;
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                string line = data[i];
+
+                if (line.StartsWith("usemtl "))
+                {
+                    // Find the material name
+                    string materialName = line.Substring("usemtl ".Length);
+
+                    if (!isFirstMaterial)
+                    {
+                        meshes.Add(currentMaterial, new Mesh(currentVertices, currentTextureCoordinates, currentNormals));
+
+                        currentVertices = new List<Vector3>();
+                        currentNormals = new List<Vector3>();
+                        currentTextureCoordinates = new List<Vector2>();
+                    }
+                    else
+                    {
+                        isFirstMaterial = false;
+                    }
+
+                    // Find the material and set it as current material
+                    bool materialFound = false;
+                    foreach (Material material in materials)
+                    {
+                        if (!materialFound)
+                        {
+                            if (material.MaterialName == materialName)
+                            {
+                                currentMaterial = material;
+                                materialFound = true;
+                            }
+                        }
+                    }
+                }
+                else if (line.StartsWith("f "))
+                {
+                    string[] lineData = line.Substring("f ".Length).Split(' ');
+
+                    foreach (var setData in lineData)
+                    {
+                        string[] stringData = setData.Split('/');
+
+                        int vertexIndex, normalIndex, textureCoordinateIndex;
+
+                        vertexIndex = normalIndex = textureCoordinateIndex = -1;
+
+                        if (stringData.Length == 1)
+                        {
+                            ParseInt(line, stringData[0], ref vertexIndex);
+                        }
+                        else if (stringData.Length == 2)
+                        {
+                            ParseInt(line, stringData[0], ref vertexIndex);
+                            ParseInt(line, stringData[1], ref textureCoordinateIndex);
+                        }
+                        else if (stringData.Length == 3)
+                        {
+                            ParseInt(line, stringData[0], ref vertexIndex);
+                            ParseInt(line, stringData[1], ref textureCoordinateIndex);
+                            ParseInt(line, stringData[2], ref normalIndex);
+                            
+                        }
+
+                        if (vertexIndex != -1 && normalIndex != -1 && textureCoordinateIndex != -1)
+                        {
+                            currentVertices.Add(vertices[vertexIndex - 1]);
+                            currentNormals.Add(normals[normalIndex - 1]);
+                            currentTextureCoordinates.Add(textureCoordinates[textureCoordinateIndex - 1]);
+                        }
+                    }
+                }
+            }
+
+            // Add the final mesh manually
+            meshes.Add(currentMaterial, new Mesh(currentVertices, currentTextureCoordinates, currentNormals));
+
+            return meshes;
+        }
+
+
         public static List<Material> ParseMTL(string[] data)
         {
             List<Material> materials = new List<Material>();
@@ -49,7 +143,7 @@ namespace SampleGame.Engine.Utilities
                 {
                     if (!float.TryParse(line.Substring("Ns ".Length), out ns))
                     {
-                        Console.WriteLine($"ParseMTL: parsing error at line {i + 1}. Material may be incomplete.");
+                        Console.WriteLine($"ParseMTL: parsing error at line {i + 1}. Material may be incomplete. Line: ({line})");
                         ns = 0;
                     }
                 }
@@ -107,6 +201,10 @@ namespace SampleGame.Engine.Utilities
                     normalMap = ParseTexture(line, "map_Kn");
                 }
             }
+            
+            // Add the final material manually
+            Material lastMaterial = new Material(materialName, ka, kd, ks, ns, opacity, illum, diffuseMap, specularMap, normalMap);
+            materials.Add(lastMaterial);
 
             return materials;
         }
@@ -187,6 +285,26 @@ namespace SampleGame.Engine.Utilities
             }
 
             return new Vector2(f1, f2);
+        }
+
+        // Parses a string into a float. expects the line, the string and a reference to what it parses to
+        private static void ParseFloat(string line, string data, ref float output)
+        {
+            if (!float.TryParse(data, out output))
+            {
+                Console.WriteLine($"ParseFloat: parsing error. Line: ({line})");
+                output = 0;
+            }
+        }
+
+        // Parses a string into a int. expects the line, the string and a reference to what it parses to
+        private static void ParseInt(string line, string data, ref int output)
+        {
+            if (!int.TryParse(data, out output))
+            {
+                Console.WriteLine($"ParseInt: parsing error. Line: ({line})");
+                output = 0;
+            }
         }
 
         private static void ResetMaterialParamaters(ref string materialName, ref Vector3 ka, ref Vector3 kd, ref Vector3 ks, ref float ns, ref float opacity, ref int illum, ref Texture diffuseMap, ref Texture specularMap, ref Texture normalMap)
