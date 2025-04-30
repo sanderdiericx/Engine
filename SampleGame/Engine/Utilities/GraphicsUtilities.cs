@@ -8,6 +8,8 @@ namespace SampleGame.Engine.Utilities
         // Uploads mesh data to the GPU, expects a float array of unique vertices and a uint array of indices to draw
         public static (int, int, int) UploadMesh(Window window, float[] verticesData, uint[] indices)
         {
+            window.Shader.Use();
+
             int vertexArrayObject, vertexBufferObject, elementBufferObject;
 
             vertexArrayObject = GL.GenVertexArray();

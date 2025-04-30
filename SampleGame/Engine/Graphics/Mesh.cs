@@ -9,14 +9,15 @@ namespace SampleGame.Engine.Graphics
         public int VertexBufferObject;
         public int ElementBufferObject;
 
+        public float[] VertexBuffer;
         public float[] UniqueVertexBuffer;
         public uint[] Indices;
 
         public Mesh(List<Vector3> vertices, List<Vector2> textureCoordinates, List<Vector3> normals)
         {
-            float[] vertexData = GetInterleavedVertexData(vertices, textureCoordinates, normals);
+            VertexBuffer = GetInterleavedVertexData(vertices, textureCoordinates, normals);
 
-            (float[], uint[]) uniqueData = GetIndices(vertexData);
+            (float[], uint[]) uniqueData = GetIndices(VertexBuffer);
 
             UniqueVertexBuffer = uniqueData.Item1;
             Indices = uniqueData.Item2;

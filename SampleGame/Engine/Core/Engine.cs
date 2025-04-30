@@ -18,6 +18,8 @@ namespace SampleGame.Engine.Core
         public static int SizeX; 
         public static int SizeY;
         public static float Aspect;
+        public static KeyboardState Keyboard;
+        public static MouseState Mouse;
 
         private Engine()
         {

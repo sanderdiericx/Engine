@@ -1,6 +1,7 @@
 ﻿using OpenTK.Graphics.ES11;
 using OpenTK.Mathematics;
 using SampleGame.Engine.Graphics;
+using System.Globalization;
 
 namespace SampleGame.Engine.Utilities
 {
@@ -141,7 +142,7 @@ namespace SampleGame.Engine.Utilities
                 }
                 else if (line.StartsWith("Ns "))
                 {
-                    if (!float.TryParse(line.Substring("Ns ".Length), out ns))
+                    if (!float.TryParse(line.Substring("Ns ".Length), NumberStyles.Float, CultureInfo.InvariantCulture, out ns))
                     {
                         Console.WriteLine($"ParseMTL: parsing error at line {i + 1}. Material may be incomplete. Line: ({line})");
                         ns = 0;
@@ -161,7 +162,7 @@ namespace SampleGame.Engine.Utilities
                 }
                 else if (line.StartsWith("d "))
                 {
-                    if (!float.TryParse(line.Substring("d ".Length), out opacity))
+                    if (!float.TryParse(line.Substring("d ".Length), NumberStyles.Float, CultureInfo.InvariantCulture, out opacity))
                     {
                         Console.WriteLine($"ParseMTL: parsing error at line {i + 1}. Material may be incomplete.");
                         opacity = 0;
@@ -169,7 +170,7 @@ namespace SampleGame.Engine.Utilities
                 }
                 else if (line.StartsWith("Tr"))
                 {
-                    if (!float.TryParse(line.Substring("Tr ".Length), out opacity))
+                    if (!float.TryParse(line.Substring("Tr ".Length), NumberStyles.Float, CultureInfo.InvariantCulture, out opacity))
                     {
                         Console.WriteLine($"ParseMTL: parsing error at line {i + 1}. Material may be incomplete.");
                         opacity = 0;
@@ -182,7 +183,7 @@ namespace SampleGame.Engine.Utilities
                 }
                 else if (line.StartsWith("illum "))
                 {
-                    if (!int.TryParse(line.Substring("illum ".Length), out illum))
+                    if (!int.TryParse(line.Substring("illum ".Length), NumberStyles.Integer, CultureInfo.InvariantCulture, out illum))
                     {
                         Console.WriteLine($"ParseMTL: parsing error at line {i + 1}. Material may be incomplete.");
                         illum = 0;
@@ -260,7 +261,7 @@ namespace SampleGame.Engine.Utilities
 
             float f1, f2, f3;
 
-            if (!float.TryParse(data[0], out f1) || !float.TryParse(data[1], out f2) || !float.TryParse(data[2], out f3))
+            if (!float.TryParse(data[0], NumberStyles.Float, CultureInfo.InvariantCulture, out f1) || !float.TryParse(data[1], NumberStyles.Float, CultureInfo.InvariantCulture, out f2) || !float.TryParse(data[2], NumberStyles.Float, CultureInfo.InvariantCulture, out f3))
             {
                 Console.WriteLine($"ParseVector3: parsing error. Line: {line}");
 
@@ -277,7 +278,7 @@ namespace SampleGame.Engine.Utilities
 
             float f1, f2;
 
-            if (!float.TryParse(data[0], out f1) || !float.TryParse(data[1], out f2))
+            if (!float.TryParse(data[0], NumberStyles.Float, CultureInfo.InvariantCulture, out f1) || !float.TryParse(data[1], NumberStyles.Float, CultureInfo.InvariantCulture, out f2))
             {
                 Console.WriteLine($"ParseVector2: parsing error. Line: {line}");
 
@@ -290,7 +291,7 @@ namespace SampleGame.Engine.Utilities
         // Parses a string into a float. expects the line, the string and a reference to what it parses to
         private static void ParseFloat(string line, string data, ref float output)
         {
-            if (!float.TryParse(data, out output))
+            if (!float.TryParse(data, NumberStyles.Float, CultureInfo.InvariantCulture, out output))
             {
                 Console.WriteLine($"ParseFloat: parsing error. Line: ({line})");
                 output = 0;
@@ -300,7 +301,7 @@ namespace SampleGame.Engine.Utilities
         // Parses a string into a int. expects the line, the string and a reference to what it parses to
         private static void ParseInt(string line, string data, ref int output)
         {
-            if (!int.TryParse(data, out output))
+            if (!int.TryParse(data, NumberStyles.Integer, CultureInfo.InvariantCulture, out output))
             {
                 Console.WriteLine($"ParseInt: parsing error. Line: ({line})");
                 output = 0;

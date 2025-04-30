@@ -2,6 +2,7 @@
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using SampleGame.Engine.Core;
+using RenderEngine = SampleGame.Engine.Core.Engine;
 
 namespace SampleGame.Engine.Graphics
 {
@@ -20,7 +21,7 @@ namespace SampleGame.Engine.Graphics
             
             Shader = new Shader("Engine/Graphics/Shaders/shader.vert", "Engine/Graphics/Shaders/shader.frag");
             Shader.Use();
-            Shader.SetInt("texture1", 0);
+            Shader.SetInt("texture0", 0);
 
             SizeX = Size.X;
             SizeY = Size.Y;
@@ -34,6 +35,8 @@ namespace SampleGame.Engine.Graphics
 
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             GL.Enable(EnableCap.DepthTest);
+
+            CursorState = CursorState.Grabbed;
         }
 
         protected override void OnUnload()
@@ -58,6 +61,9 @@ namespace SampleGame.Engine.Graphics
         protected override void OnUpdateFrame(FrameEventArgs args)
         {
             base.OnUpdateFrame(args);
+
+            RenderEngine.Keyboard = KeyboardState;
+            RenderEngine.Mouse = MouseState;
 
             _game.OnUpdateFrame(args);
         }
