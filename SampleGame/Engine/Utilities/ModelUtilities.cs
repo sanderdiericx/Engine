@@ -94,13 +94,12 @@ namespace SampleGame.Engine.Utilities
                             ParseInt(line, stringData[0], ref vertexIndex);
                             ParseInt(line, stringData[1], ref textureCoordinateIndex);
                             ParseInt(line, stringData[2], ref normalIndex);
-
                         }
 
                         // Convert negative indices into positive ones
-                        int actualVertexIndex = (vertexIndex >= 1) ? vertexIndex - 1 : vertices.Count + vertexIndex;
-                        int actualNormalIndex = (normalIndex >= 1) ? normalIndex - 1 : normals.Count + normalIndex;
-                        int actualTextureCoordinateIndex = (textureCoordinateIndex >= 1) ? textureCoordinateIndex - 1 : textureCoordinates.Count + textureCoordinateIndex;
+                        int actualVertexIndex = (vertexIndex > 0) ? vertexIndex - 1 : vertices.Count + vertexIndex - 1;
+                        int actualNormalIndex = (normalIndex > 0) ? normalIndex - 1 : normals.Count + normalIndex - 1;
+                        int actualTextureCoordinateIndex = (textureCoordinateIndex > 0) ? textureCoordinateIndex - 1 : textureCoordinates.Count + textureCoordinateIndex - 1;
 
                         currentVertices.Add(vertices[actualVertexIndex]);
                         currentNormals.Add(normals[actualNormalIndex]);
@@ -127,6 +126,9 @@ namespace SampleGame.Engine.Utilities
 
             return meshes;
         }
+
+        private static void AddTriangle
+
 
 
         public static List<Material> ParseMTL(string[] data)

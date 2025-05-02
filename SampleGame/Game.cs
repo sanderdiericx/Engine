@@ -15,10 +15,9 @@ namespace SampleGame
 
         void IGame.OnLoad()
         {
-            ResourceLoader.Instance.LoadFolder(@"Assets\San_Miguel");
-            ResourceLoader.Instance.LoadFolder(@"Assets");
+            ResourceLoader.Instance.LoadFolder(@"Assets\plane");
 
-            model = new Model("san-miguel-low-poly.obj", "san-miguel-low-poly.mtl");
+            model = new Model("piper_pa18.obj", "piper_pa18.mtl");
             model.InitializeModel();
 
             camera = new Camera(new Vector3(0, 0, -3), RenderEngine.WindowVariables.Aspect);
