@@ -127,10 +127,6 @@ namespace SampleGame.Engine.Utilities
             return meshes;
         }
 
-        private static void AddTriangle
-
-
-
         public static List<Material> ParseMTL(string[] data)
         {
             List<Material> materials = new List<Material>();
