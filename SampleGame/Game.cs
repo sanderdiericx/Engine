@@ -15,16 +15,16 @@ namespace SampleGame
 
         void IGame.OnLoad()
         {
-            // ResourceLoader.Instance.LoadFolder(@"Assets\San_Miguel");
+            ResourceLoader.Instance.LoadFolder(@"Assets\San_Miguel");
             ResourceLoader.Instance.LoadFolder(@"Assets");
 
-            model = new Model("white_oak.obj", "white_oak.mtl");
+            model = new Model("san-miguel-low-poly.obj", "san-miguel-low-poly.mtl");
             model.InitializeModel();
 
             camera = new Camera(new Vector3(0, 0, -3), RenderEngine.WindowVariables.Aspect);
 
-            model.SetModelPosition(0, 0, 0);
-            model.ScaleModel(0.2f);
+            model.SetModelPosition(-10, 0, 0);
+            model.ScaleModel(0.5f);
         }
 
         void IGame.OnUnload()
