@@ -15,10 +15,10 @@ namespace SampleGame
 
         void IGame.OnLoad()
         {
-            //ResourceLoader.Instance.LoadFolder(@"Assets\San_Miguel");
+            // ResourceLoader.Instance.LoadFolder(@"Assets\San_Miguel");
             ResourceLoader.Instance.LoadFolder(@"Assets");
 
-            model = new Model("erato.obj", "erato.mtl");
+            model = new Model("white_oak.obj", "white_oak.mtl");
             model.InitializeModel();
 
             camera = new Camera(new Vector3(0, 0, -3), RenderEngine.WindowVariables.Aspect);

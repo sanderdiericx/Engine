@@ -6,8 +6,16 @@ namespace SampleGame.Engine.Utilities
 {
     internal class ModelUtilities
     {
+        class MeshData
+        {
+            public List<Vector3> Vertices = new List<Vector3>();
+            public List<Vector3> Normals = new List<Vector3>();
+            public List<Vector2> TextureCoordinates = new List<Vector2>();
+        }
+
         public static Dictionary<Material, Mesh> GetMeshes(string[] data, List<Vector3> vertices, List<Vector3> normals, List<Vector2> textureCoordinates, List<Material> materials)
         {
+            Dictionary<Material, MeshData> meshDataPerMaterial = new Dictionary<Material, MeshData>();
             Dictionary<Material, Mesh> meshes = new Dictionary<Material, Mesh>();
 
             List<Vector3> currentVertices = new List<Vector3>();
@@ -28,17 +36,14 @@ namespace SampleGame.Engine.Utilities
 
                     if (!isFirstMaterial)
                     {
-                        if (!meshes.ContainsKey(currentMaterial))
+                        if (!meshDataPerMaterial.ContainsKey(currentMaterial))
                         {
-                            meshes.Add(currentMaterial, new Mesh(currentVertices, currentTextureCoordinates, currentNormals));
+                            meshDataPerMaterial.Add(currentMaterial, new MeshData());
                         }
-                        else // Fuse the 2 meshes data into a new mesh for this material
-                        {
-                            meshes[currentMaterial] = new Mesh(
-                                meshes[currentMaterial].Vertices.Concat(currentVertices).ToList(),
-                                meshes[currentMaterial].TextureCoordinates.Concat(currentTextureCoordinates).ToList(),
-                                meshes[currentMaterial].Normals.Concat(currentNormals).ToList());
-                        }
+
+                        meshDataPerMaterial[currentMaterial].Vertices.AddRange(currentVertices);
+                        meshDataPerMaterial[currentMaterial].Normals.AddRange(currentNormals);
+                        meshDataPerMaterial[currentMaterial].TextureCoordinates.AddRange(currentTextureCoordinates);
 
                         currentVertices = new List<Vector3>();
                         currentNormals = new List<Vector3>();
@@ -105,16 +110,19 @@ namespace SampleGame.Engine.Utilities
             }
 
             // Add the final mesh manually
-            if (!meshes.ContainsKey(currentMaterial))
+            if (!meshDataPerMaterial.ContainsKey(currentMaterial))
             {
-                meshes.Add(currentMaterial, new Mesh(currentVertices, currentTextureCoordinates, currentNormals));
+                meshDataPerMaterial.Add(currentMaterial, new MeshData());
             }
-            else // Fuse the 2 meshes data into a new mesh for this material
+
+            meshDataPerMaterial[currentMaterial].Vertices.AddRange(currentVertices);
+            meshDataPerMaterial[currentMaterial].Normals.AddRange(currentNormals);
+            meshDataPerMaterial[currentMaterial].TextureCoordinates.AddRange(currentTextureCoordinates);
+
+            // Convert meshdata into meshes
+            foreach (var (material, meshData) in meshDataPerMaterial)
             {
-                meshes[currentMaterial] = new Mesh(
-                    meshes[currentMaterial].Vertices.Concat(currentVertices).ToList(),
-                    meshes[currentMaterial].TextureCoordinates.Concat(currentTextureCoordinates).ToList(),
-                    meshes[currentMaterial].Normals.Concat(currentNormals).ToList());
+                meshes.Add(material, new Mesh(meshData.Vertices, meshData.TextureCoordinates, meshData.Normals));
             }
 
             return meshes;
@@ -223,7 +231,7 @@ namespace SampleGame.Engine.Utilities
                     normalMap = ParseTexture(line, "map_Kn");
                 }
             }
-            
+
             // Add the final material manually
             Material lastMaterial = new Material(materialName, ka, kd, ks, ns, opacity, illum, diffuseMap, specularMap, normalMap);
             materials.Add(lastMaterial);
