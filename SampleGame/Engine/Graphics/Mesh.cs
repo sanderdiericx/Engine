@@ -9,41 +9,65 @@ namespace SampleGame.Engine.Graphics
         public int VertexBufferObject;
         public int ElementBufferObject;
 
-        public float[] VertexBuffer;
+        public List<Vector3> Vertices;
+        public List<Vector3> Normals;
+        public List<Vector2> TextureCoordinates;
+
         public float[] UniqueVertexBuffer;
         public uint[] Indices;
 
         public Mesh(List<Vector3> vertices, List<Vector2> textureCoordinates, List<Vector3> normals)
         {
-            VertexBuffer = GetInterleavedVertexData(vertices, textureCoordinates, normals);
+            Vertices = vertices;
+            TextureCoordinates = textureCoordinates;
+            Normals = normals;
 
-            (float[], uint[]) uniqueData = GetIndices(VertexBuffer);
+            float[] vertexBuffer = GetInterleavedVertexData(vertices, textureCoordinates, normals);
+
+            (float[], uint[]) uniqueData = GetIndices(vertexBuffer);
 
             UniqueVertexBuffer = uniqueData.Item1;
             Indices = uniqueData.Item2;
         }
 
-        // TO DO: Optimize dictionary lookup by switching key and val order (maybe put in hash table)
+        public struct ComboKey
+        {
+            public float x;
+            public float y;
+            public float z;
+            public float nx;
+            public float ny;
+            public float nz;
+            public float u;
+            public float v;
+        }
+
         // Returns a list of indices and a unique vertex buffer to draw by eliminating duplicates, expects a float array with vertex positions, normals and texture coordinates
         private static (float[], uint[]) GetIndices(float[] vertexData)
         {
+
             List<Vector3> vertices = new List<Vector3>();
             List<Vector3> normals = new List<Vector3>();
             List<Vector2> textureCoordinates = new List<Vector2>();
 
             List<uint> indices = new List<uint>();
-            Dictionary<string, uint> foundCombos = new Dictionary<string, uint>();
+            Dictionary<ComboKey, uint> foundCombos = new Dictionary<ComboKey, uint>();
 
             uint indexCount = 0;
 
             for (int i = 0; i < vertexData.Length; i += 8) // Stride of 8
             {
-                Vector3 vertex = new Vector3(vertexData[i], vertexData[i + 1], vertexData[i + 2]);
-                Vector3 normal = new Vector3(vertexData[i + 3], vertexData[i + 4], vertexData[i + 5]);
-                Vector2 textureCoordinate = new Vector2(vertexData[i + 6], vertexData[i + 7]);
+                ComboKey comboKey = new ComboKey();
+                comboKey.x = vertexData[i];
+                comboKey.y = vertexData[i + 1];
+                comboKey.z = vertexData[i + 2];
+                comboKey.nx = vertexData[i + 3];
+                comboKey.ny = vertexData[i + 4];
+                comboKey.nz = vertexData[i + 5];
+                comboKey.u = vertexData[i + 6];
+                comboKey.v = vertexData[i + 7];
 
-                string comboKey = $"{vertex.X},{vertex.Y},{vertex.Z},{normal.X},{normal.Y},{normal.Z},{textureCoordinate.X},{textureCoordinate.Y}";
-
+                // Check if the vertex already exists in the dictionary
                 if (!foundCombos.TryGetValue(comboKey, out uint existingIndex))
                 {
                     foundCombos.Add(comboKey, indexCount);
@@ -51,15 +75,16 @@ namespace SampleGame.Engine.Graphics
                     indices.Add(indexCount);
                     indexCount++;
 
-                    vertices.Add(vertex);
-                    normals.Add(normal);
-                    textureCoordinates.Add(textureCoordinate);
+                    vertices.Add(new Vector3(comboKey.x, comboKey.y, comboKey.z));
+                    normals.Add(new Vector3(comboKey.nx, comboKey.ny, comboKey.nz));
+                    textureCoordinates.Add(new Vector2(comboKey.u, comboKey.v));
                 }
                 else
                 {
                     indices.Add(existingIndex);
                 }
             }
+
 
             return (GetInterleavedVertexData(vertices, textureCoordinates, normals), indices.ToArray());
         }

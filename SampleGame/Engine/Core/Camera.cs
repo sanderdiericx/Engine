@@ -1,4 +1,7 @@
 ﻿using OpenTK.Mathematics;
+using OpenTK.Windowing.Common;
+using OpenTK.Windowing.GraphicsLibraryFramework;
+using RenderEngine = SampleGame.Engine.Core.Engine;
 
 namespace SampleGame.Engine.Core
 {
@@ -15,6 +18,7 @@ namespace SampleGame.Engine.Core
         {
             Position = position;
             AspectRatio = aspectRatio;
+            _firstMove = true;
         }
 
         public Vector3 Position { get; set; }
@@ -22,6 +26,9 @@ namespace SampleGame.Engine.Core
         public Vector3 Front => _front;
         public Vector3 Up => _up;
         public Vector3 Right => _right;
+
+        private bool _firstMove;
+        private Vector2 _lastPos;
 
         public float Pitch
         {
@@ -63,6 +70,59 @@ namespace SampleGame.Engine.Core
         public Matrix4 GetProjectionMatrix()
         {
             return Matrix4.CreatePerspectiveFieldOfView(_fov, AspectRatio, 0.01f, 100f);
+        }
+
+
+        public void HandleCamera(float sensitivity)
+        {
+            var mouse = RenderEngine.WindowVariables.Mouse;
+
+            if (_firstMove)
+            {
+                _lastPos = new Vector2(mouse.X, mouse.Y);
+                _firstMove = false;
+            }
+            else
+            {
+                var deltaX = mouse.X - _lastPos.X;
+                var deltaY = mouse.Y - _lastPos.Y;
+                _lastPos = new Vector2(mouse.X, mouse.Y);
+
+                Yaw += deltaX * sensitivity;
+                Pitch -= deltaY * sensitivity;
+            }
+        }
+
+
+        public void HandleMovement(FrameEventArgs args, float cameraSpeed)
+        {
+            var input = RenderEngine.WindowVariables.Keyboard;
+
+            if (input.IsKeyDown(Keys.W))
+            {
+                Position += Front * cameraSpeed * (float)args.Time;
+            }
+
+            if (input.IsKeyDown(Keys.S))
+            {
+                Position -= Front * cameraSpeed * (float)args.Time;
+            }
+            if (input.IsKeyDown(Keys.A))
+            {
+                Position -= Right * cameraSpeed * (float)args.Time;
+            }
+            if (input.IsKeyDown(Keys.D))
+            {
+                Position += Right * cameraSpeed * (float)args.Time;
+            }
+            if (input.IsKeyDown(Keys.Space))
+            {
+                Position += Up * cameraSpeed * (float)args.Time;
+            }
+            if (input.IsKeyDown(Keys.LeftShift))
+            {
+                Position -= Up * cameraSpeed * (float)args.Time;
+            }
         }
 
         private void UpdateVectors()

@@ -32,7 +32,7 @@ namespace SampleGame.Engine.Utilities
             GL.EnableVertexAttribArray(normalLocation);
             GL.VertexAttribPointer(normalLocation, 3, VertexAttribPointerType.Float, false, stride, 3 * sizeof(float));
 
-            var texCoordLocation = window.Shader.GetAttribLocation("aTexcoord");
+            var texCoordLocation = window.Shader.GetAttribLocation("aTexCoord");
             GL.EnableVertexAttribArray(texCoordLocation);
             GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, stride, 6 * sizeof(float));
 

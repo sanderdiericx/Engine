@@ -1,6 +1,7 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 using SampleGame.Engine.Core;
 using RenderEngine = SampleGame.Engine.Core.Engine;
 
@@ -62,8 +63,15 @@ namespace SampleGame.Engine.Graphics
         {
             base.OnUpdateFrame(args);
 
-            RenderEngine.Keyboard = KeyboardState;
-            RenderEngine.Mouse = MouseState;
+            RenderEngine.WindowVariables.Keyboard = KeyboardState;
+            RenderEngine.WindowVariables.Mouse = MouseState;
+
+            KeyboardState keyboard = RenderEngine.WindowVariables.Keyboard;
+
+            if (keyboard.IsKeyDown(Keys.Escape))
+            {
+                Close();
+            }
 
             _game.OnUpdateFrame(args);
         }

@@ -1,5 +1,4 @@
-﻿using OpenTK.Graphics.ES11;
-using OpenTK.Mathematics;
+﻿using OpenTK.Mathematics;
 using SampleGame.Engine.Graphics;
 using System.Globalization;
 
@@ -29,7 +28,17 @@ namespace SampleGame.Engine.Utilities
 
                     if (!isFirstMaterial)
                     {
-                        meshes.Add(currentMaterial, new Mesh(currentVertices, currentTextureCoordinates, currentNormals));
+                        if (!meshes.ContainsKey(currentMaterial))
+                        {
+                            meshes.Add(currentMaterial, new Mesh(currentVertices, currentTextureCoordinates, currentNormals));
+                        }
+                        else // Fuse the 2 meshes data into a new mesh for this material
+                        {
+                            meshes[currentMaterial] = new Mesh(
+                                meshes[currentMaterial].Vertices.Concat(currentVertices).ToList(),
+                                meshes[currentMaterial].TextureCoordinates.Concat(currentTextureCoordinates).ToList(),
+                                meshes[currentMaterial].Normals.Concat(currentNormals).ToList());
+                        }
 
                         currentVertices = new List<Vector3>();
                         currentNormals = new List<Vector3>();
@@ -56,7 +65,7 @@ namespace SampleGame.Engine.Utilities
                 }
                 else if (line.StartsWith("f "))
                 {
-                    string[] lineData = line.Substring("f ".Length).Split(' ');
+                    string[] lineData = line.Substring("f ".Length).Trim().Split(' ');
 
                     foreach (var setData in lineData)
                     {
@@ -80,21 +89,33 @@ namespace SampleGame.Engine.Utilities
                             ParseInt(line, stringData[0], ref vertexIndex);
                             ParseInt(line, stringData[1], ref textureCoordinateIndex);
                             ParseInt(line, stringData[2], ref normalIndex);
-                            
+
                         }
 
-                        if (vertexIndex != -1 && normalIndex != -1 && textureCoordinateIndex != -1)
-                        {
-                            currentVertices.Add(vertices[vertexIndex - 1]);
-                            currentNormals.Add(normals[normalIndex - 1]);
-                            currentTextureCoordinates.Add(textureCoordinates[textureCoordinateIndex - 1]);
-                        }
+                        // Convert negative indices into positive ones
+                        int actualVertexIndex = (vertexIndex >= 0) ? vertexIndex - 1 : vertices.Count + vertexIndex;
+                        int actualNormalIndex = (normalIndex >= 0) ? normalIndex - 1 : normals.Count + normalIndex;
+                        int actualTextureCoordinateIndex = (textureCoordinateIndex >= 0) ? textureCoordinateIndex - 1 : textureCoordinates.Count + textureCoordinateIndex;
+
+                        currentVertices.Add(vertices[actualVertexIndex]);
+                        currentNormals.Add(normals[actualNormalIndex]);
+                        currentTextureCoordinates.Add(textureCoordinates[actualTextureCoordinateIndex]);
                     }
                 }
             }
 
             // Add the final mesh manually
-            meshes.Add(currentMaterial, new Mesh(currentVertices, currentTextureCoordinates, currentNormals));
+            if (!meshes.ContainsKey(currentMaterial))
+            {
+                meshes.Add(currentMaterial, new Mesh(currentVertices, currentTextureCoordinates, currentNormals));
+            }
+            else // Fuse the 2 meshes data into a new mesh for this material
+            {
+                meshes[currentMaterial] = new Mesh(
+                    meshes[currentMaterial].Vertices.Concat(currentVertices).ToList(),
+                    meshes[currentMaterial].TextureCoordinates.Concat(currentTextureCoordinates).ToList(),
+                    meshes[currentMaterial].Normals.Concat(currentNormals).ToList());
+            }
 
             return meshes;
         }
@@ -121,7 +142,7 @@ namespace SampleGame.Engine.Utilities
 
             for (int i = 0; i < data.Length; i++)
             {
-                string line = data[i];
+                string line = data[i].TrimStart();
 
                 if (line.StartsWith("newmtl ")) // Create new material
                 {
@@ -239,7 +260,7 @@ namespace SampleGame.Engine.Utilities
 
         private static Texture ParseTexture(string line, string name)
         {
-            string textureName = line.Substring(name.Length).Trim();
+            string textureName = Path.GetFileName(line.Substring(name.Length).Trim());
 
             string texturePath = Texture.FindTextureFilePath(textureName);
 

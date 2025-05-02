@@ -15,16 +15,22 @@ namespace SampleGame.Engine.Core
         private static Window Window;
         public static Engine Instance { get; private set; }
 
-        public static int SizeX; 
-        public static int SizeY;
-        public static float Aspect;
-        public static KeyboardState Keyboard;
-        public static MouseState Mouse;
+        public static WindowVariable WindowVariables;
 
         private Engine()
         {
             Instance = this;
         }
+
+        public struct WindowVariable
+        {
+            public KeyboardState Keyboard;
+            public MouseState Mouse;
+            public float Aspect;
+            public int SizeX;
+            public int SizeY;
+        }
+
 
         // Runs the engine and creates an interface to interact with
         public static void Run<T>(WindowSettings windowSettings) where T : IGame, new()
@@ -44,9 +50,9 @@ namespace SampleGame.Engine.Core
                 Window = window;
 
                 // Update size and aspect
-                SizeX = Window.SizeX;
-                SizeY = Window.SizeY;
-                Aspect = SizeX / (float)SizeY;
+                WindowVariables.SizeX = Window.SizeX;
+                WindowVariables.SizeY = Window.SizeY;
+                WindowVariables.Aspect = WindowVariables.SizeX / (float)WindowVariables.SizeY;
 
                 if (window == null)
                 {
@@ -73,19 +79,22 @@ namespace SampleGame.Engine.Core
             {
                 foreach (var (material, mesh) in model.meshes)
                 {
-                    GL.BindVertexArray(mesh.VertexArrayObject);
-
-                    material.DiffuseMap.Use(TextureUnit.Texture0);
-
                     Window.Shader.Use();
+                    
+                    Window.Shader.SetInt("texture0", 0);
+
+                    if (material.DiffuseMap != null)
+                    {
+                        material.DiffuseMap.Use(TextureUnit.Texture0);
+                    }
 
                     // Set uniforms
                     var world = model.transform * model.rotation * model.scale;
-
                     Window.Shader.SetMatrix4("model", world);
                     Window.Shader.SetMatrix4("view", camera.GetViewMatrix());
                     Window.Shader.SetMatrix4("projection", camera.GetProjectionMatrix());
 
+                    GL.BindVertexArray(mesh.VertexArrayObject);
                     GL.DrawElements(PrimitiveType.Triangles, mesh.Indices.Length, DrawElementsType.UnsignedInt, 0);
                 }
             }

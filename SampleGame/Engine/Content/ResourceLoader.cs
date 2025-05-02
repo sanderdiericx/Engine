@@ -57,8 +57,8 @@
                 return data;
             }
 
-            Console.WriteLine("GetAsset: requested asset could not be found.");
-            return new string[] { }; // Returns an empty string array if unsuccessfull
+            Console.WriteLine($"GetAsset: requested asset could not be found. ({fileName})");
+            return []; // Returns an empty string array if unsuccessfull
         }
     }
 }
