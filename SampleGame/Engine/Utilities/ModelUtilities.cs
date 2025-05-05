@@ -3,6 +3,8 @@ using SampleGame.Engine.Graphics;
 using System.Globalization;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System;
+using System.Buffers;
 
 namespace SampleGame.Engine.Utilities
 {
@@ -85,9 +87,13 @@ namespace SampleGame.Engine.Utilities
 
             Parallel.ForEach(linesPerMaterial, kvp =>
             {
-                List<Vector3> currentVertices = new List<Vector3>();
-                List<Vector2> currentTextureCoordinates = new List<Vector2>();
-                List<Vector3> currentNormals = new List<Vector3>();
+                Vector3[] currentVertices = new Vector3[kvp.Value.Count * 3 + 1];
+                Vector2[] currentTextureCoordinates = new Vector2[kvp.Value.Count * 3 + 1];
+                Vector3[] currentNormals = new Vector3[kvp.Value.Count * 3 + 1];
+
+                int vertexCount = 0;
+                int textureCount = 0;
+                int normalCount = 0;
 
                 foreach (var line in kvp.Value)
                 {
@@ -129,27 +135,37 @@ namespace SampleGame.Engine.Utilities
                     // Handles triangles, quads and polygons
                     for (int i = 1; i < foundCorners.Count - 1; i++)
                     {
-                        currentVertices.Add(vertices[foundCorners[0].Vertex]);
-                        currentNormals.Add(normals[foundCorners[0].Normal]);
-                        currentTextureCoordinates.Add(textureCoordinates[foundCorners[0].Texture]);
+                        currentVertices[vertexCount] = (vertices[foundCorners[0].Vertex]);
+                        currentNormals[normalCount] = (normals[foundCorners[0].Normal]);
+                        currentTextureCoordinates[textureCount] = (textureCoordinates[foundCorners[0].Texture]);
 
-                        currentVertices.Add(vertices[foundCorners[i].Vertex]);
-                        currentNormals.Add(normals[foundCorners[i].Normal]);
-                        currentTextureCoordinates.Add(textureCoordinates[foundCorners[i].Texture]);
+                        vertexCount++;
+                        normalCount++;
+                        textureCount++;
 
-                        currentVertices.Add(vertices[foundCorners[i + 1].Vertex]);
-                        currentNormals.Add(normals[foundCorners[i + 1].Normal]);
-                        currentTextureCoordinates.Add(textureCoordinates[foundCorners[i + 1].Texture]);
+                        currentVertices[vertexCount] = (vertices[foundCorners[i].Vertex]);
+                        currentNormals[normalCount] = (normals[foundCorners[i].Normal]);
+                        currentTextureCoordinates[textureCount] = (textureCoordinates[foundCorners[i].Texture]);
+
+                        vertexCount++;
+                        normalCount++;
+                        textureCount++;
+
+                        currentVertices[vertexCount] = (vertices[foundCorners[i + 1].Vertex]);
+                        currentNormals[normalCount] = (normals[foundCorners[i + 1].Normal]);
+                        currentTextureCoordinates[textureCount] = (textureCoordinates[foundCorners[i + 1].Texture]);
+
+                        vertexCount++;
+                        normalCount++;
+                        textureCount++;
                     }
-
                 }
 
-                meshes.TryAdd(kvp.Key, new Mesh(currentVertices, currentTextureCoordinates, currentNormals));
+                meshes.TryAdd(kvp.Key, new Mesh(currentVertices.ToList(), currentTextureCoordinates.ToList(), currentNormals.ToList()));
             });
 
-
             stopwatch.Stop();
-            Console.WriteLine($"Parsed meshes in: {stopwatch.ElapsedMilliseconds}ms");
+            Console.WriteLine($"Parsed {meshes.Count} meshes in: {stopwatch.ElapsedMilliseconds}ms");
 
             return meshes.ToDictionary();
         }
@@ -172,6 +188,9 @@ namespace SampleGame.Engine.Utilities
 
         public static List<Material> ParseMTL(string[] data)
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             List<Material> materials = new List<Material>();
 
             bool firstMaterial = true;
@@ -288,11 +307,17 @@ namespace SampleGame.Engine.Utilities
             Material lastMaterial = new Material(materialName, ka, kd, ks, ns, opacity, illum, diffuseMap, specularMap, normalMap);
             materials.Add(lastMaterial);
 
+            stopwatch.Stop();
+            Console.WriteLine($"Parsed {materials.Count} materials in: {stopwatch.ElapsedMilliseconds}ms");
+
             return materials;
         }
 
         public static (List<Vector3>, List<Vector2>, List<Vector3>) ParseOBJ(string[] data)
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             List<Vector3> vertices = new List<Vector3>();
             List<Vector2> textureCoordinates = new List<Vector2>();
             List<Vector3> normals = new List<Vector3>();
@@ -314,6 +339,10 @@ namespace SampleGame.Engine.Utilities
                     normals.Add(ParseVector3(line, "vn "));
                 }
             }
+
+            stopwatch.Stop();
+            Console.WriteLine($"Parsed vertex data in {stopwatch.ElapsedMilliseconds}ms, vertices count: {vertices.Count}");
+
 
             return (vertices, textureCoordinates, normals);
         }
