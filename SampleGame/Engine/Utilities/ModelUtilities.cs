@@ -1,6 +1,8 @@
 ﻿using OpenTK.Mathematics;
 using SampleGame.Engine.Graphics;
 using System.Globalization;
+using System.Collections.Concurrent;
+using System.Diagnostics;
 
 namespace SampleGame.Engine.Utilities
 {
@@ -13,138 +15,159 @@ namespace SampleGame.Engine.Utilities
             public List<Vector2> TextureCoordinates = new List<Vector2>();
         }
 
+        public struct Corner()
+        {
+            public int Vertex = -1;
+            public int Texture = -1;
+            public int Normal = -1;
+        }
+
+        // Parses the face data of a .obj file into meshes with their respective materials, expects text, vertices, normals, texture coordinates and a list of all materials
         public static Dictionary<Material, Mesh> GetMeshes(string[] data, List<Vector3> vertices, List<Vector3> normals, List<Vector2> textureCoordinates, List<Material> materials)
         {
-            Dictionary<Material, MeshData> meshDataPerMaterial = new Dictionary<Material, MeshData>();
-            Dictionary<Material, Mesh> meshes = new Dictionary<Material, Mesh>();
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
 
-            List<Vector3> currentVertices = new List<Vector3>();
-            List<Vector3> currentNormals = new List<Vector3>();
-            List<Vector2> currentTextureCoordinates = new List<Vector2>();
+            // Sort face lines by what material they use
+            Dictionary<Material, List<string>> linesPerMaterial = new Dictionary<Material, List<string>>();
 
-            Material currentMaterial = materials[0];
-            bool isFirstMaterial = true;
+            Material currentMaterial = null;
+            List<string> currentLines = new List<string>();
+            bool firstMaterial = true;
+
+            // Convert materials to a dictionary for a faster lookup
+            var materialMap = materials.ToDictionary(m => m.MaterialName);
 
             for (int i = 0; i < data.Length; i++)
             {
-                string line = data[i];
-
-                if (line.StartsWith("usemtl "))
+                if (data[i].StartsWith("usemtl "))
                 {
-                    // Find the material name
-                    string materialName = line.Substring("usemtl ".Length);
-
-                    if (!isFirstMaterial)
+                    if (!firstMaterial)
                     {
-                        if (!meshDataPerMaterial.ContainsKey(currentMaterial))
+                        if (!linesPerMaterial.TryAdd(currentMaterial, currentLines))
                         {
-                            meshDataPerMaterial.Add(currentMaterial, new MeshData());
+                            linesPerMaterial[currentMaterial].AddRange(currentLines);
                         }
 
-                        meshDataPerMaterial[currentMaterial].Vertices.AddRange(currentVertices);
-                        meshDataPerMaterial[currentMaterial].Normals.AddRange(currentNormals);
-                        meshDataPerMaterial[currentMaterial].TextureCoordinates.AddRange(currentTextureCoordinates);
-
-                        currentVertices = new List<Vector3>();
-                        currentNormals = new List<Vector3>();
-                        currentTextureCoordinates = new List<Vector2>();
+                        currentMaterial = null;
+                        currentLines = new List<string>();
                     }
                     else
                     {
-                        isFirstMaterial = false;
+                        firstMaterial = false;
                     }
 
-                    // Find the material and set it as current material
-                    bool materialFound = false;
-                    foreach (Material material in materials)
-                    {
-                        if (!materialFound)
-                        {
-                            if (material.MaterialName == materialName)
-                            {
-                                currentMaterial = material;
-                                materialFound = true;
-                            }
-                        }
-                    }
+                    // Split the line into 2 to find the material name
+                    ReadOnlySpan<char> span = data[i].AsSpan();
+                    int spaceIndex = span.IndexOf(' ');
+                    var materialNameSpan = span.Slice(spaceIndex + 1);
+
+                    materialMap.TryGetValue(materialNameSpan.ToString(), out currentMaterial);
+
                 }
-                else if (line.StartsWith("f "))
+                else if (data[i].StartsWith("f "))
                 {
-                    string[] lineData = line.Substring("f ".Length).Trim().Split(' ');
+                    currentLines.Add(data[i]);
+                }
+            }
+
+            // Add the final set
+            if (currentMaterial != null && currentLines.Count > 0)
+            {
+                if (!linesPerMaterial.TryAdd(currentMaterial, currentLines))
+                {
+                    linesPerMaterial[currentMaterial].AddRange(currentLines);
+                }
+            }
+
+            // Parse face lines on multiple threads and add them to a mesh data dictionary
+            ConcurrentDictionary<Material, Mesh> meshes = new ConcurrentDictionary<Material, Mesh>();
+
+            Parallel.ForEach(linesPerMaterial, kvp =>
+            {
+                List<Vector3> currentVertices = new List<Vector3>();
+                List<Vector2> currentTextureCoordinates = new List<Vector2>();
+                List<Vector3> currentNormals = new List<Vector3>();
+
+                foreach (var line in kvp.Value)
+                {
                     List<Corner> foundCorners = new List<Corner>();
+                    Corner currentCorner = new Corner();
 
-                    foreach (var setData in lineData)
-                    {
-                        Corner currentCorner = new Corner();
+                    ReadOnlySpan<char> span = line.AsSpan().Slice(2); // Slice 2 because we need to skip "f "
 
-                        string[] stringData = setData.Split('/');
+                    int firstSlash = span.IndexOf('/');
+                    int secondSlash = span.Slice(firstSlash + 1).IndexOf('/') + firstSlash + 1;
+                    int firstSpace = span.IndexOf(' ');
 
-                        if (stringData.Length == 1)
-                        {
-                            ParseInt(line, stringData[0], ref currentCorner.Vertex);
-                        }
-                        else if (stringData.Length == 2)
-                        {
-                            ParseInt(line, stringData[0], ref currentCorner.Vertex);
-                            ParseInt(line, stringData[1], ref currentCorner.Texture);
-                        }
-                        else if (stringData.Length == 3)
-                        {
-                            ParseInt(line, stringData[0], ref currentCorner.Vertex);
-                            ParseInt(line, stringData[1], ref currentCorner.Texture);
-                            ParseInt(line, stringData[2], ref currentCorner.Normal);
-                        }
+                    int thirdSlash = span.Slice(firstSpace + 1).IndexOf('/') + firstSpace + 1;
+                    int fourthSlash = span.Slice(thirdSlash + 1).IndexOf('/') + thirdSlash + 1;
+                    int secondSpace = span.Slice(firstSpace + 1).IndexOf(' ') + firstSpace + 1;
 
-                        // Convert negative indices into positive ones
-                        currentCorner.Vertex = (currentCorner.Vertex > 0) ? currentCorner.Vertex - 1 : vertices.Count + currentCorner.Vertex - 1;
-                        currentCorner.Normal = (currentCorner.Normal > 0) ? currentCorner.Normal - 1 : normals.Count + currentCorner.Normal - 1;
-                        currentCorner.Texture = (currentCorner.Texture > 0) ? currentCorner.Texture - 1 : textureCoordinates.Count + currentCorner.Texture - 1;
+                    int fifthSlash = span.Slice(secondSpace + 1).IndexOf('/') + secondSpace + 1;
+                    int sixthSlash = span.Slice(fifthSlash + 1).IndexOf('/') + fifthSlash + 1;
 
-                        foundCorners.Add(currentCorner);
-                    }
+                    // Vertex 1
+                    var vertexIndexSpan1 = span.Slice(0, firstSlash);
+                    var textureIndexSpan1 = span.Slice(firstSlash + 1, secondSlash - firstSlash - 1);
+                    var normalIndexSpan1 = span.Slice(secondSlash + 1, firstSpace - secondSlash - 1);
+
+                    // Vertex 2
+                    var vertexIndexSpan2 = span.Slice(firstSpace + 1, thirdSlash - firstSpace - 1);
+                    var textureIndexSpan2 = span.Slice(thirdSlash + 1, fourthSlash - thirdSlash - 1);
+                    var normalIndexSpan2 = span.Slice(fourthSlash + 1, secondSpace - fourthSlash - 1);
+
+                    // Vertex 3
+                    var vertexIndexSpan3 = span.Slice(secondSpace + 1, fifthSlash - secondSpace - 1);
+                    var textureIndexSpan3 = span.Slice(fifthSlash + 1, sixthSlash - fifthSlash - 1);
+                    var normalIndexSpan3 = span.Slice(sixthSlash + 1);
+
+                    foundCorners.Add(ConvertToCorner(vertexIndexSpan1, textureIndexSpan1, normalIndexSpan1, vertices, normals, textureCoordinates));
+                    foundCorners.Add(ConvertToCorner(vertexIndexSpan2, textureIndexSpan2, normalIndexSpan2, vertices, normals, textureCoordinates));
+                    foundCorners.Add(ConvertToCorner(vertexIndexSpan3, textureIndexSpan3, normalIndexSpan3, vertices, normals, textureCoordinates));
 
                     // Handles triangles, quads and polygons
-                    for (int j = 1; j < foundCorners.Count - 1; j++)
+                    for (int i = 1; i < foundCorners.Count - 1; i++)
                     {
                         currentVertices.Add(vertices[foundCorners[0].Vertex]);
                         currentNormals.Add(normals[foundCorners[0].Normal]);
                         currentTextureCoordinates.Add(textureCoordinates[foundCorners[0].Texture]);
 
-                        currentVertices.Add(vertices[foundCorners[j].Vertex]);
-                        currentNormals.Add(normals[foundCorners[j].Normal]);
-                        currentTextureCoordinates.Add(textureCoordinates[foundCorners[j].Texture]);
+                        currentVertices.Add(vertices[foundCorners[i].Vertex]);
+                        currentNormals.Add(normals[foundCorners[i].Normal]);
+                        currentTextureCoordinates.Add(textureCoordinates[foundCorners[i].Texture]);
 
-                        currentVertices.Add(vertices[foundCorners[j + 1].Vertex]);
-                        currentNormals.Add(normals[foundCorners[j + 1].Normal]);
-                        currentTextureCoordinates.Add(textureCoordinates[foundCorners[j + 1].Texture]);
+                        currentVertices.Add(vertices[foundCorners[i + 1].Vertex]);
+                        currentNormals.Add(normals[foundCorners[i + 1].Normal]);
+                        currentTextureCoordinates.Add(textureCoordinates[foundCorners[i + 1].Texture]);
                     }
+
                 }
-            }
 
-            // Add the final mesh manually
-            if (!meshDataPerMaterial.ContainsKey(currentMaterial))
-            {
-                meshDataPerMaterial.Add(currentMaterial, new MeshData());
-            }
+                meshes.TryAdd(kvp.Key, new Mesh(currentVertices, currentTextureCoordinates, currentNormals));
+            });
 
-            meshDataPerMaterial[currentMaterial].Vertices.AddRange(currentVertices);
-            meshDataPerMaterial[currentMaterial].Normals.AddRange(currentNormals);
-            meshDataPerMaterial[currentMaterial].TextureCoordinates.AddRange(currentTextureCoordinates);
 
-            // Convert meshdata into meshes
-            foreach (var (material, meshData) in meshDataPerMaterial)
-            {
-                meshes.Add(material, new Mesh(meshData.Vertices, meshData.TextureCoordinates, meshData.Normals));
-            }
+            stopwatch.Stop();
+            Console.WriteLine($"Parsed meshes in: {stopwatch.ElapsedMilliseconds}ms");
 
-            return meshes;
+            return meshes.ToDictionary();
         }
 
-        public struct Corner()
+        private static Corner ConvertToCorner(ReadOnlySpan<char> vertexSpan, ReadOnlySpan<char> textureSpan, ReadOnlySpan<char> normalSpan, List<Vector3> vertices, List<Vector3> normals, List<Vector2> textureCoordinates)
         {
-            public int Vertex = -1;
-            public int Texture = -1;
-            public int Normal = - 1;
+            Corner corner = new Corner();
+
+            int.TryParse(vertexSpan, out corner.Vertex);
+            int.TryParse(textureSpan, out corner.Texture);
+            int.TryParse(normalSpan, out corner.Normal);
+
+            // Convert negative indices into positive ones
+            corner.Vertex = (corner.Vertex > 0) ? corner.Vertex - 1 : vertices.Count + corner.Vertex - 1;
+            corner.Normal = (corner.Normal > 0) ? corner.Normal - 1 : normals.Count + corner.Normal - 1;
+            corner.Texture = (corner.Texture > 0) ? corner.Texture - 1 : textureCoordinates.Count + corner.Texture - 1;
+
+            return corner;
         }
 
         public static List<Material> ParseMTL(string[] data)
@@ -178,7 +201,18 @@ namespace SampleGame.Engine.Utilities
 
                         materials.Add(material);
 
-                        ResetMaterialParamaters(ref materialName, ref ka, ref kd, ref ks, ref ns, ref opacity, ref illum, ref diffuseMap, ref specularMap, ref normalMap);
+                        // Reset material variables
+                        materialName = string.Empty;
+                        ka = Vector3.Zero;
+                        kd = Vector3.Zero;
+                        ks = Vector3.Zero;
+                        ns = 0f;
+                        opacity = 0f;
+                        illum = 0;
+
+                        diffuseMap = null;
+                        specularMap = null;
+                        normalMap = null;
                     }
                     else
                     {
@@ -353,21 +387,6 @@ namespace SampleGame.Engine.Utilities
                 Console.WriteLine($"ParseInt: parsing error. Line: ({line})");
                 output = 0;
             }
-        }
-
-        private static void ResetMaterialParamaters(ref string materialName, ref Vector3 ka, ref Vector3 kd, ref Vector3 ks, ref float ns, ref float opacity, ref int illum, ref Texture diffuseMap, ref Texture specularMap, ref Texture normalMap)
-        {
-            materialName = string.Empty;
-            ka = Vector3.Zero;
-            kd = Vector3.Zero;
-            ks = Vector3.Zero;
-            ns = 0f;
-            opacity = 0f;
-            illum = 0;
-
-            diffuseMap = null;
-            specularMap = null;
-            normalMap = null;
         }
     }
 }

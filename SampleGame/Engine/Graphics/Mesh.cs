@@ -9,19 +9,11 @@ namespace SampleGame.Engine.Graphics
         public int VertexBufferObject;
         public int ElementBufferObject;
 
-        public List<Vector3> Vertices;
-        public List<Vector3> Normals;
-        public List<Vector2> TextureCoordinates;
-
         public float[] UniqueVertexBuffer;
         public uint[] Indices;
 
         public Mesh(List<Vector3> vertices, List<Vector2> textureCoordinates, List<Vector3> normals)
         {
-            Vertices = vertices;
-            TextureCoordinates = textureCoordinates;
-            Normals = normals;
-
             float[] vertexBuffer = GetInterleavedVertexData(vertices, textureCoordinates, normals);
 
             (float[], uint[]) uniqueData = GetIndices(vertexBuffer);

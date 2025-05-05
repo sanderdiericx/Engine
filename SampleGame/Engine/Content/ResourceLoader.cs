@@ -30,11 +30,7 @@
             {
                 Console.WriteLine($"LoadAsset: {fileName} is already used. Please use another name.");
             }
-            else if (!_supportedExtensions.Contains(extension)) // File type was invalid
-            {
-                Console.WriteLine($"LoadAsset: the file type ({extension}) is not yet supported directly for model loading. File was skipped. ({fileName})");
-            }
-            else // File was not found
+            else if (_supportedExtensions.Contains(extension)) // File was not found
             {
                 Console.WriteLine($"LoadAsset: {filePath} was not found and thus could not be loaded.");
             }
