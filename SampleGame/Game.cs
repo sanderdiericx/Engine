@@ -15,9 +15,9 @@ namespace SampleGame
 
         void IGame.OnLoad()
         {
-            ResourceLoader.Instance.LoadFolder(@"Assets\plane");
+            ResourceLoader.Instance.LoadFolder(@"Assets\erato");
 
-            model = new Model("piper_pa18.obj", "piper_pa18.mtl");
+            model = new Model("erato.obj", "erato.mtl");
             model.InitializeModel();
 
             camera = new Camera(new Vector3(0, 0, -3), RenderEngine.WindowVariables.Aspect);

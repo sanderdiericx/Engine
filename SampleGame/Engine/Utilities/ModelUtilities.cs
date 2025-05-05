@@ -71,39 +71,52 @@ namespace SampleGame.Engine.Utilities
                 else if (line.StartsWith("f "))
                 {
                     string[] lineData = line.Substring("f ".Length).Trim().Split(' ');
+                    List<Corner> foundCorners = new List<Corner>();
 
                     foreach (var setData in lineData)
                     {
+                        Corner currentCorner = new Corner();
+
                         string[] stringData = setData.Split('/');
-
-                        int vertexIndex, normalIndex, textureCoordinateIndex;
-
-                        vertexIndex = normalIndex = textureCoordinateIndex = -1;
 
                         if (stringData.Length == 1)
                         {
-                            ParseInt(line, stringData[0], ref vertexIndex);
+                            ParseInt(line, stringData[0], ref currentCorner.Vertex);
                         }
                         else if (stringData.Length == 2)
                         {
-                            ParseInt(line, stringData[0], ref vertexIndex);
-                            ParseInt(line, stringData[1], ref textureCoordinateIndex);
+                            ParseInt(line, stringData[0], ref currentCorner.Vertex);
+                            ParseInt(line, stringData[1], ref currentCorner.Texture);
                         }
                         else if (stringData.Length == 3)
                         {
-                            ParseInt(line, stringData[0], ref vertexIndex);
-                            ParseInt(line, stringData[1], ref textureCoordinateIndex);
-                            ParseInt(line, stringData[2], ref normalIndex);
+                            ParseInt(line, stringData[0], ref currentCorner.Vertex);
+                            ParseInt(line, stringData[1], ref currentCorner.Texture);
+                            ParseInt(line, stringData[2], ref currentCorner.Normal);
                         }
 
                         // Convert negative indices into positive ones
-                        int actualVertexIndex = (vertexIndex > 0) ? vertexIndex - 1 : vertices.Count + vertexIndex - 1;
-                        int actualNormalIndex = (normalIndex > 0) ? normalIndex - 1 : normals.Count + normalIndex - 1;
-                        int actualTextureCoordinateIndex = (textureCoordinateIndex > 0) ? textureCoordinateIndex - 1 : textureCoordinates.Count + textureCoordinateIndex - 1;
+                        currentCorner.Vertex = (currentCorner.Vertex > 0) ? currentCorner.Vertex - 1 : vertices.Count + currentCorner.Vertex - 1;
+                        currentCorner.Normal = (currentCorner.Normal > 0) ? currentCorner.Normal - 1 : normals.Count + currentCorner.Normal - 1;
+                        currentCorner.Texture = (currentCorner.Texture > 0) ? currentCorner.Texture - 1 : textureCoordinates.Count + currentCorner.Texture - 1;
 
-                        currentVertices.Add(vertices[actualVertexIndex]);
-                        currentNormals.Add(normals[actualNormalIndex]);
-                        currentTextureCoordinates.Add(textureCoordinates[actualTextureCoordinateIndex]);
+                        foundCorners.Add(currentCorner);
+                    }
+
+                    // Handles triangles, quads and polygons
+                    for (int j = 1; j < foundCorners.Count - 1; j++)
+                    {
+                        currentVertices.Add(vertices[foundCorners[0].Vertex]);
+                        currentNormals.Add(normals[foundCorners[0].Normal]);
+                        currentTextureCoordinates.Add(textureCoordinates[foundCorners[0].Texture]);
+
+                        currentVertices.Add(vertices[foundCorners[j].Vertex]);
+                        currentNormals.Add(normals[foundCorners[j].Normal]);
+                        currentTextureCoordinates.Add(textureCoordinates[foundCorners[j].Texture]);
+
+                        currentVertices.Add(vertices[foundCorners[j + 1].Vertex]);
+                        currentNormals.Add(normals[foundCorners[j + 1].Normal]);
+                        currentTextureCoordinates.Add(textureCoordinates[foundCorners[j + 1].Texture]);
                     }
                 }
             }
@@ -125,6 +138,13 @@ namespace SampleGame.Engine.Utilities
             }
 
             return meshes;
+        }
+
+        public struct Corner()
+        {
+            public int Vertex = -1;
+            public int Texture = -1;
+            public int Normal = - 1;
         }
 
         public static List<Material> ParseMTL(string[] data)
