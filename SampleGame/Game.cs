@@ -39,9 +39,6 @@ namespace SampleGame
         {
             camera.HandleMovement(args, 3f);
             camera.HandleCamera(0.8f);
-
-
-            model.RotateModelY(0.01f);
         }
 
         void IGame.OnResize(ResizeEventArgs e)

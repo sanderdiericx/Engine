@@ -85,7 +85,6 @@ namespace SampleGame.Engine.Graphics
                 }
             }
 
-
             return (GetInterleavedVertexData(vertices, textureCoordinates, normals), indices.ToArray());
         }
 
