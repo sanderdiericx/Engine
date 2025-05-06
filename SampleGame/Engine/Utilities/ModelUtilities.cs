@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System;
 using System.Buffers;
+using OpenTK.Graphics.ES20;
 
 namespace SampleGame.Engine.Utilities
 {
@@ -87,17 +88,35 @@ namespace SampleGame.Engine.Utilities
 
             Parallel.ForEach(linesPerMaterial, kvp =>
             {
-                Vector3[] currentVertices = new Vector3[kvp.Value.Count * 3 + 1];
-                Vector2[] currentTextureCoordinates = new Vector2[kvp.Value.Count * 3 + 1];
-                Vector3[] currentNormals = new Vector3[kvp.Value.Count * 3 + 1];
+                Vector3[] currentVertices = new Vector3[kvp.Value.Count * 6 + 1];
+                Vector2[] currentTextureCoordinates = new Vector2[kvp.Value.Count * 6 + 1];
+                Vector3[] currentNormals = new Vector3[kvp.Value.Count * 6 + 1];
 
                 int vertexCount = 0;
                 int textureCount = 0;
                 int normalCount = 0;
 
+                Span<Corner> foundCorners = stackalloc Corner[4];
+                int lastSize = 4;
+
                 foreach (var line in kvp.Value)
                 {
-                    List<Corner> foundCorners = new List<Corner>();
+                    int slashCount = CountSpanChar(line, '/');
+                    int cornerCount = slashCount / 2;
+
+                    // Make sure we're only allocating a different size when needed
+                    if (cornerCount > lastSize)
+                    {
+                        foundCorners = stackalloc Corner[cornerCount];
+                        lastSize = cornerCount;
+                    }
+
+                    // Clear foundCorners buffer
+                    for (int i = 0; i < cornerCount; i++)
+                    {
+                        foundCorners[i] = new Corner { Vertex = -1, Texture = -1, Normal = -1 };
+                    }
+                        
                     Corner currentCorner = new Corner();
 
                     ReadOnlySpan<char> span = line.AsSpan().Slice(2); // Slice 2 because we need to skip "f "
@@ -128,12 +147,27 @@ namespace SampleGame.Engine.Utilities
                     var textureIndexSpan3 = span.Slice(fifthSlash + 1, sixthSlash - fifthSlash - 1);
                     var normalIndexSpan3 = span.Slice(sixthSlash + 1);
 
-                    foundCorners.Add(ConvertToCorner(vertexIndexSpan1, textureIndexSpan1, normalIndexSpan1, vertices, normals, textureCoordinates));
-                    foundCorners.Add(ConvertToCorner(vertexIndexSpan2, textureIndexSpan2, normalIndexSpan2, vertices, normals, textureCoordinates));
-                    foundCorners.Add(ConvertToCorner(vertexIndexSpan3, textureIndexSpan3, normalIndexSpan3, vertices, normals, textureCoordinates));
+                    foundCorners[0] = (ConvertToCorner(vertexIndexSpan1, textureIndexSpan1, normalIndexSpan1, vertices, normals, textureCoordinates));
+                    foundCorners[1] = (ConvertToCorner(vertexIndexSpan2, textureIndexSpan2, normalIndexSpan2, vertices, normals, textureCoordinates));
+                    foundCorners[2] = (ConvertToCorner(vertexIndexSpan3, textureIndexSpan3, normalIndexSpan3, vertices, normals, textureCoordinates));
+
+                    // Check if we need to add a fourth corner
+                    if (cornerCount > 3)
+                    {
+                        int thirdSpace = span.Slice(secondSpace + 1).IndexOf(' ') + secondSpace + 1;
+                        int seventhSlash = span.Slice(thirdSpace + 1).IndexOf('/') + thirdSpace + 1;
+                        int eightSlash = span.Slice(seventhSlash + 1).IndexOf('/') + seventhSlash + 1;
+
+                        // Vertex 4
+                        var vertexIndexSpan4 = span.Slice(thirdSpace + 1, seventhSlash - thirdSpace - 1);
+                        var textureIndexSpan4 = span.Slice(seventhSlash + 1, eightSlash - seventhSlash - 1);
+                        var normalIndexSpan4 = span.Slice(eightSlash + 1);
+
+                        foundCorners[3] = (ConvertToCorner(vertexIndexSpan4, textureIndexSpan4, normalIndexSpan4, vertices, normals, textureCoordinates));
+                    }
 
                     // Handles triangles, quads and polygons
-                    for (int i = 1; i < foundCorners.Count - 1; i++)
+                    for (int i = 1; i < cornerCount - 1; i++)
                     {
                         currentVertices[vertexCount] = (vertices[foundCorners[0].Vertex]);
                         currentNormals[normalCount] = (normals[foundCorners[0].Normal]);
@@ -142,6 +176,7 @@ namespace SampleGame.Engine.Utilities
                         vertexCount++;
                         normalCount++;
                         textureCount++;
+
 
                         currentVertices[vertexCount] = (vertices[foundCorners[i].Vertex]);
                         currentNormals[normalCount] = (normals[foundCorners[i].Normal]);
@@ -161,13 +196,27 @@ namespace SampleGame.Engine.Utilities
                     }
                 }
 
-                meshes.TryAdd(kvp.Key, new Mesh(currentVertices.ToList(), currentTextureCoordinates.ToList(), currentNormals.ToList()));
+                meshes.TryAdd(kvp.Key, new Mesh(currentVertices, currentTextureCoordinates, currentNormals));
             });
 
             stopwatch.Stop();
             Console.WriteLine($"Parsed {meshes.Count} meshes in: {stopwatch.ElapsedMilliseconds}ms");
 
             return meshes.ToDictionary();
+        }
+
+        private static int CountSpanChar(ReadOnlySpan<char> span, char search)
+        {
+            int count = 0;
+            foreach (char c in span)
+            {
+                if (c == search)
+                {
+                    count++;
+                }
+            }
+
+            return count;
         }
 
         private static Corner ConvertToCorner(ReadOnlySpan<char> vertexSpan, ReadOnlySpan<char> textureSpan, ReadOnlySpan<char> normalSpan, List<Vector3> vertices, List<Vector3> normals, List<Vector2> textureCoordinates)

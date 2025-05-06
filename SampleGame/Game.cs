@@ -14,9 +14,9 @@ namespace SampleGame
 
         void IGame.OnLoad()
         {
-            ResourceLoader.Instance.LoadFolder(@"Assets\erato");
+            ResourceLoader.Instance.LoadFolder(@"Assets\san_miguel");
 
-            model = new Model("erato.obj", "erato.mtl");
+            model = new Model("san-miguel-low-poly.obj", "san-miguel-low-poly.mtl");
             model.InitializeModel();
 
             camera = new Camera(new Vector3(0, 0, -3), RenderEngine.WindowVariables.Aspect);
@@ -39,6 +39,9 @@ namespace SampleGame
         {
             camera.HandleMovement(args, 3f);
             camera.HandleCamera(0.8f);
+
+
+            model.RotateModelY(0.01f);
         }
 
         void IGame.OnResize(ResizeEventArgs e)
