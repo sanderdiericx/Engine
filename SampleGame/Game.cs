@@ -14,15 +14,15 @@ namespace SampleGame
 
         void IGame.OnLoad()
         {
-            ResourceLoader.Instance.LoadFolder(@"Assets\san_miguel");
+            ResourceLoader.Instance.LoadFolder(@"Assets\city");
 
-            model = new Model("san-miguel-low-poly.obj", "san-miguel-low-poly.mtl");
+            model = new Model("Amaryllis City.obj", "Amaryllis City.mtl");
             model.InitializeModel();
 
             camera = new Camera(new Vector3(0, 0, -3), RenderEngine.WindowVariables.Aspect);
 
             model.SetModelPosition(-10, 0, 0);
-            model.ScaleModel(0.5f);
+            model.ScaleModel(0.005f);
         }
 
         void IGame.OnUnload()

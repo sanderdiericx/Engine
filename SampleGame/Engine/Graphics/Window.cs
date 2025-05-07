@@ -34,6 +34,7 @@ namespace SampleGame.Engine.Graphics
 
             _game.OnLoad();
 
+            GL.Enable(EnableCap.Multisample);
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             GL.Enable(EnableCap.DepthTest);
 
