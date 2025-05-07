@@ -22,7 +22,6 @@ namespace SampleGame.Engine.Graphics
             GL.ActiveTexture(TextureUnit.Texture0);
             GL.BindTexture(TextureTarget.Texture2D, handle);
 
-
             StbImage.stbi_set_flip_vertically_on_load(1); // Flip because OpenGL loads opposite direction as StbImage
 
             // Read image file and pass to OpenGL
@@ -40,6 +39,13 @@ namespace SampleGame.Engine.Graphics
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
 
             GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+
+            // Check for OpenGL errors
+            ErrorCode error = GL.GetError();
+            if (error != ErrorCode.NoError)
+            {
+                throw new Exception($"OpenGL error occurred: {error}");
+            }
 
             return new Texture(handle);
         }

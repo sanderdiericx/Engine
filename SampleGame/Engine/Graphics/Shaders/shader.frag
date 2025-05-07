@@ -6,7 +6,17 @@ in vec2 texCoord;
 
 uniform sampler2D texture0;
 
+uniform int useTexture;
+uniform vec3 materialColor;
+
 void main()
 {
-    outputColor = texture(texture0, texCoord);
+    if (useTexture == 1)
+    {
+        outputColor = texture(texture0, texCoord);
+    }
+    else
+    {
+        outputColor = vec4(materialColor, 1.0);
+    }
 }

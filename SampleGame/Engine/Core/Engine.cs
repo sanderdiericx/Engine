@@ -80,12 +80,20 @@ namespace SampleGame.Engine.Core
                 foreach (var (material, mesh) in model.meshes)
                 {
                     Window.Shader.Use();
-                    
+
                     Window.Shader.SetInt("texture0", 0);
 
                     if (material.DiffuseMap != null)
                     {
+                        Window.Shader.SetBool("useTexture", true);
+
                         material.DiffuseMap.Use(TextureUnit.Texture0);
+                    }
+                    else 
+                    {
+                        Window.Shader.SetBool("useTexture", false);
+
+                        Window.Shader.SetVector3("materialColor", material.Kd);
                     }
 
                     // Set uniforms

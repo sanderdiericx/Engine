@@ -65,8 +65,10 @@ namespace SampleGame.Engine.Utilities
                     int spaceIndex = span.IndexOf(' ');
                     var materialNameSpan = span.Slice(spaceIndex + 1);
 
-                    materialMap.TryGetValue(materialNameSpan.ToString(), out currentMaterial);
-
+                    if (!materialMap.TryGetValue(materialNameSpan.ToString(), out currentMaterial))
+                    {
+                        Console.WriteLine($"GetMeshes: Requested material could not be found. Material: {materialNameSpan}");
+                    }
                 }
                 else if (data[i].StartsWith("f "))
                 {
@@ -370,7 +372,7 @@ namespace SampleGame.Engine.Utilities
 
             for (int i = 0; i < data.Length; i++)
             {
-                string line = data[i];
+                string line = data[i].Replace("#IND", "");
 
                 if (line.StartsWith("v "))
                 {
@@ -388,7 +390,6 @@ namespace SampleGame.Engine.Utilities
 
             stopwatch.Stop();
             Console.WriteLine($"Parsed vertex data in {stopwatch.ElapsedMilliseconds}ms, vertices count: {vertices.Count}");
-
 
             return (vertices, textureCoordinates, normals);
         }

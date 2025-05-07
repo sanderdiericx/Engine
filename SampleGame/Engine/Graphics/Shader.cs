@@ -101,6 +101,20 @@ namespace SampleGame.Engine.Graphics
             GL.UniformMatrix4(location, true, ref matrix);
         }
 
+        // Assign a vector 3 to a uniform
+        public void SetVector3(string name, Vector3 vector)
+        {
+            int location = GL.GetUniformLocation(Handle, name);
+            GL.Uniform3(location, vector);
+        }
+
+        // Assign a boolean to a uniform
+        public void SetBool(string name, bool boolean)
+        {
+            int location = GL.GetUniformLocation(Handle, name);
+            GL.Uniform1(location, boolean ? 1 : 0);
+        }
+
         public void Dispose()
         {
             Dispose(true);
