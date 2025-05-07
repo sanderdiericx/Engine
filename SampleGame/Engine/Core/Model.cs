@@ -8,9 +8,10 @@ namespace SampleGame.Engine.Core
 {
     public class Model
     {
-        internal List<Vector3> vertices;
-        internal List<Vector2> textureCoordinates;
-        internal List<Vector3> normals;
+        internal Vector3[] vertices;
+        internal Vector2[] texCoords;
+        internal Vector3[] normals;
+
         internal List<Material> materials;
         internal Dictionary<Material, Mesh> meshes;
         internal bool isInitialized;
@@ -33,12 +34,12 @@ namespace SampleGame.Engine.Core
             var output = ModelUtilities.ParseOBJ(dataObj);
 
             vertices = output.Item1;
-            textureCoordinates = output.Item2;
+            texCoords = output.Item2;
             normals = output.Item3;
 
             materials = ModelUtilities.ParseMTL(dataMtl);
 
-            meshes = ModelUtilities.GetMeshes(dataObj, vertices, normals, textureCoordinates, materials);
+            meshes = ModelUtilities.GetMeshes(dataObj, vertices, normals, texCoords, materials);
         }
 
         public void InitializeModel()

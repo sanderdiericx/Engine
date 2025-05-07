@@ -11,13 +11,6 @@ namespace SampleGame.Engine.Utilities
 {
     internal class ModelUtilities
     {
-        class MeshData
-        {
-            public List<Vector3> Vertices = new List<Vector3>();
-            public List<Vector3> Normals = new List<Vector3>();
-            public List<Vector2> TextureCoordinates = new List<Vector2>();
-        }
-
         public struct Corner()
         {
             public int Vertex = -1;
@@ -26,7 +19,7 @@ namespace SampleGame.Engine.Utilities
         }
 
         // Parses the face data of a .obj file into meshes with their respective materials, expects text, vertices, normals, texture coordinates and a list of all materials
-        public static Dictionary<Material, Mesh> GetMeshes(string[] data, List<Vector3> vertices, List<Vector3> normals, List<Vector2> textureCoordinates, List<Material> materials)
+        public static Dictionary<Material, Mesh> GetMeshes(string[] data, Vector3[] vertices, Vector3[] normals, Vector2[] texCoords, List<Material> materials)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -120,7 +113,7 @@ namespace SampleGame.Engine.Utilities
                 }
 
                 Vector3[] currentVertices = new Vector3[triangleSum + 1];
-                Vector2[] currentTextureCoordinates = new Vector2[triangleSum + 1];
+                Vector2[] currentTexCoords = new Vector2[triangleSum + 1];
                 Vector3[] currentNormals = new Vector3[triangleSum + 1];
                 
                 int vertexCount = 0;
@@ -163,7 +156,7 @@ namespace SampleGame.Engine.Utilities
 
                         span = span.Slice(firstSpace + 1);
 
-                        foundCorners[i] = ConvertToCorner(vertexIndexSpan, textureIndexSpan, normalIndexSpan, vertices, normals, textureCoordinates);
+                        foundCorners[i] = ConvertToCorner(vertexIndexSpan, textureIndexSpan, normalIndexSpan, vertices, normals, texCoords);
                     }
 
                     // Handles triangles, quads and polygons
@@ -171,7 +164,7 @@ namespace SampleGame.Engine.Utilities
                     {
                         currentVertices[vertexCount] = (vertices[foundCorners[0].Vertex]);
                         currentNormals[normalCount] = (normals[foundCorners[0].Normal]);
-                        currentTextureCoordinates[textureCount] = (textureCoordinates[foundCorners[0].Texture]);
+                        currentTexCoords[textureCount] = (texCoords[foundCorners[0].Texture]);
 
                         vertexCount++;
                         normalCount++;
@@ -179,7 +172,7 @@ namespace SampleGame.Engine.Utilities
 
                         currentVertices[vertexCount] = (vertices[foundCorners[i].Vertex]);
                         currentNormals[normalCount] = (normals[foundCorners[i].Normal]);
-                        currentTextureCoordinates[textureCount] = (textureCoordinates[foundCorners[i].Texture]);
+                        currentTexCoords[textureCount] = (texCoords[foundCorners[i].Texture]);
 
                         vertexCount++;
                         normalCount++;
@@ -187,7 +180,7 @@ namespace SampleGame.Engine.Utilities
 
                         currentVertices[vertexCount] = (vertices[foundCorners[i + 1].Vertex]);
                         currentNormals[normalCount] = (normals[foundCorners[i + 1].Normal]);
-                        currentTextureCoordinates[textureCount] = (textureCoordinates[foundCorners[i + 1].Texture]);
+                        currentTexCoords[textureCount] = (texCoords[foundCorners[i + 1].Texture]);
 
                         vertexCount++;
                         normalCount++;
@@ -195,7 +188,7 @@ namespace SampleGame.Engine.Utilities
                     }
                 }
 
-                meshes.TryAdd(kvp.Key, new Mesh(currentVertices, currentTextureCoordinates, currentNormals));
+                meshes.TryAdd(kvp.Key, new Mesh(currentVertices, currentTexCoords, currentNormals));
             });
 
             stopwatch.Stop();
@@ -218,7 +211,7 @@ namespace SampleGame.Engine.Utilities
             return count;
         }
 
-        private static Corner ConvertToCorner(ReadOnlySpan<char> vertexSpan, ReadOnlySpan<char> textureSpan, ReadOnlySpan<char> normalSpan, List<Vector3> vertices, List<Vector3> normals, List<Vector2> textureCoordinates)
+        private static Corner ConvertToCorner(ReadOnlySpan<char> vertexSpan, ReadOnlySpan<char> textureSpan, ReadOnlySpan<char> normalSpan, Vector3[] vertices, Vector3[] normals, Vector2[] texCoords)
         {
             Corner corner = new Corner();
 
@@ -227,9 +220,9 @@ namespace SampleGame.Engine.Utilities
             int.TryParse(normalSpan, out corner.Normal);
 
             // Convert negative indices into positive ones
-            corner.Vertex = (corner.Vertex > 0) ? corner.Vertex - 1 : vertices.Count + corner.Vertex - 1;
-            corner.Normal = (corner.Normal > 0) ? corner.Normal - 1 : normals.Count + corner.Normal - 1;
-            corner.Texture = (corner.Texture > 0) ? corner.Texture - 1 : textureCoordinates.Count + corner.Texture - 1;
+            corner.Vertex = (corner.Vertex > 0) ? corner.Vertex - 1 : vertices.Length + corner.Vertex - 1;
+            corner.Normal = (corner.Normal > 0) ? corner.Normal - 1 : normals.Length + corner.Normal - 1;
+            corner.Texture = (corner.Texture > 0) ? corner.Texture - 1 : texCoords.Length + corner.Texture - 1;
 
             return corner;
         }
@@ -361,38 +354,99 @@ namespace SampleGame.Engine.Utilities
             return materials;
         }
 
-        public static (List<Vector3>, List<Vector2>, List<Vector3>) ParseOBJ(string[] data)
+        public static (Vector3[], Vector2[], Vector3[]) ParseOBJ(string[] data)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            List<Vector3> vertices = new List<Vector3>();
-            List<Vector2> textureCoordinates = new List<Vector2>();
-            List<Vector3> normals = new List<Vector3>();
+            int vertexCount = 0;
+            int textureCount = 0;
+            int normalCount = 0;
 
+            // Prefetch array sizes
             for (int i = 0; i < data.Length; i++)
             {
-                string line = data[i].Replace("#IND", "");
-
-                if (line.StartsWith("v "))
+                if (data[i].StartsWith("v "))
                 {
-                    vertices.Add(ParseVector3(line, "v "));
+                    vertexCount++;
                 }
-                else if (line.StartsWith("vt "))
+                else if (data[i].StartsWith("vt "))
                 {
-                    textureCoordinates.Add(ParseVector2(line, "vt "));
+                    textureCount++;
                 }
-                else if (line.StartsWith("vn "))
+                else if (data[i].StartsWith("vn "))
                 {
-                    normals.Add(ParseVector3(line, "vn "));
+                    normalCount++;
                 }
             }
 
-            stopwatch.Stop();
-            Console.WriteLine($"Parsed vertex data in {stopwatch.ElapsedMilliseconds}ms, vertices count: {vertices.Count}");
+            Vector3[] vertices = new Vector3[vertexCount + 1];
+            Vector2[] texCoords = new Vector2[textureCount + 1];
+            Vector3[] normals = new Vector3[normalCount + 1];
 
-            return (vertices, textureCoordinates, normals);
+            // Reset counters for reuse
+            vertexCount = 0;
+            textureCount = 0;
+            normalCount = 0;
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                if (data[i].StartsWith("v "))
+                {
+                    ReadOnlySpan<char> span = data[i].AsSpan().Slice(2);
+
+                    vertices[vertexCount] = SpanToVector3(span);
+
+                    vertexCount++;
+                }
+                else if (data[i].StartsWith("vt "))
+                {
+                    ReadOnlySpan<char> span = data[i].AsSpan().Slice(3);
+
+                    texCoords[textureCount] = SpanToVector2(span);
+
+                    textureCount++;
+                }
+                else if (data[i].StartsWith("vn "))
+                {
+                    ReadOnlySpan<char> span = data[i].AsSpan().Slice(3);
+
+                    normals[normalCount] = SpanToVector3(span);
+
+                    normalCount++;
+                }
+            }
+
+
+            stopwatch.Stop();
+            Console.WriteLine($"Parsed vertex data in {stopwatch.ElapsedMilliseconds}ms");
+
+            return (vertices, texCoords, normals);
         }
+
+        private static Vector2 SpanToVector2(ReadOnlySpan<char> span)
+        {
+            int firstSpace = span.IndexOf(' ');
+
+            var floatSpan1 = span.Slice(0, firstSpace);
+            var floatSpan2 = span.Slice(firstSpace);
+
+            return new Vector2(float.Parse(floatSpan1), float.Parse(floatSpan2));
+        }
+
+
+        private static Vector3 SpanToVector3(ReadOnlySpan<char> span)
+        {
+            int firstSpace = span.IndexOf(' ');
+            int secondSpace = span.Slice(firstSpace + 1).IndexOf(' ') + firstSpace + 1;
+
+            var floatSpan1 = span.Slice(0, firstSpace);
+            var floatSpan2 = span.Slice(firstSpace + 1, secondSpace - firstSpace - 1);
+            var floatSpan3 = span.Slice(secondSpace);
+
+            return new Vector3(float.Parse(floatSpan1), float.Parse(floatSpan2), float.Parse(floatSpan3));
+        }
+
 
         private static Texture ParseTexture(string line, string name)
         {
