@@ -1,5 +1,4 @@
-﻿using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
+﻿using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using SampleGame.Engine.Content;
 using SampleGame.Engine.Core;
@@ -16,7 +15,7 @@ namespace SampleGame
         {
             ResourceLoader.Instance.LoadFolder(@"Assets\san_miguel");
 
-            model = new Model("san-miguel.obj", "san-miguel.mtl");
+            model = new Model("san-miguel-low-poly.obj", "san-miguel-low-poly.mtl");
             model.InitializeModel();
 
             camera = new Camera(new Vector3(0, 0, -3), RenderEngine.WindowVariables.Aspect);

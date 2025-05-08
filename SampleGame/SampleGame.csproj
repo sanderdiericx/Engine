@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Engine\Graphics\Shaders\skybox.frag" />
+  </ItemGroup>
+
+  <ItemGroup>
 	  <None Update="Assets\**\*.*">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
