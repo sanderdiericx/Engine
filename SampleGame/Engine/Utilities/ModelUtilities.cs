@@ -431,7 +431,9 @@ namespace SampleGame.Engine.Utilities
             var floatSpan1 = span.Slice(0, firstSpace);
             var floatSpan2 = span.Slice(firstSpace);
 
-            return new Vector2(float.Parse(floatSpan1), float.Parse(floatSpan2));
+            return new Vector2(
+                float.Parse(floatSpan1, CultureInfo.InvariantCulture),
+                float.Parse(floatSpan2, CultureInfo.InvariantCulture));
         }
 
 
@@ -444,7 +446,10 @@ namespace SampleGame.Engine.Utilities
             var floatSpan2 = span.Slice(firstSpace + 1, secondSpace - firstSpace - 1);
             var floatSpan3 = span.Slice(secondSpace);
 
-            return new Vector3(float.Parse(floatSpan1), float.Parse(floatSpan2), float.Parse(floatSpan3));
+            return new Vector3(
+                float.Parse(floatSpan1, CultureInfo.InvariantCulture),
+                float.Parse(floatSpan2, CultureInfo.InvariantCulture), 
+                float.Parse(floatSpan3, CultureInfo.InvariantCulture));
         }
 
 
