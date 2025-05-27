@@ -291,15 +291,15 @@ namespace SampleGame.Engine.Utilities
                 }
                 else if (line.StartsWith("Ka "))
                 {
-                    ka = ParseVector3(line, "Ka ");
+                    ka = SpanToVector3(line.AsSpan().Slice("Ka ".Length));
                 }
                 else if (line.StartsWith("Kd "))
                 {
-                    kd = ParseVector3(line, "Kd ");
+                    kd = SpanToVector3(line.AsSpan().Slice("Kd ".Length));
                 }
                 else if (line.StartsWith("Ks "))
                 {
-                    ks = ParseVector3(line, "Ks ");
+                    ks = SpanToVector3(line.AsSpan().Slice("Ks ".Length));
                 }
                 else if (line.StartsWith("d "))
                 {
@@ -426,11 +426,26 @@ namespace SampleGame.Engine.Utilities
 
         private static Vector2 SpanToVector2(ReadOnlySpan<char> span)
         {
+            span = span.Trim();
+
+            ReadOnlySpan<char> floatSpan1;
+            ReadOnlySpan<char> floatSpan2;
+
             int firstSpace = span.IndexOf(' ');
 
-            var floatSpan1 = span.Slice(0, firstSpace);
-            var floatSpan2 = span.Slice(firstSpace);
+            if (CountSpanChar(span, ' ') == 1)
+            {
+                floatSpan1 = span.Slice(0, firstSpace);
+                floatSpan2 = span.Slice(firstSpace);
+            }
+            else
+            {
+                int secondSpace = span.Slice(firstSpace + 1).IndexOf(' ') + firstSpace + 1;
 
+                floatSpan1 = span.Slice(0, firstSpace);
+                floatSpan2 = span.Slice(firstSpace + 1, secondSpace - firstSpace - 1);
+            }
+            
             return new Vector2(
                 float.Parse(floatSpan1, CultureInfo.InvariantCulture),
                 float.Parse(floatSpan2, CultureInfo.InvariantCulture));
@@ -439,16 +454,33 @@ namespace SampleGame.Engine.Utilities
 
         private static Vector3 SpanToVector3(ReadOnlySpan<char> span)
         {
+            span = span.Trim();
+
+            ReadOnlySpan<char> floatSpan1;
+            ReadOnlySpan<char> floatSpan2;
+            ReadOnlySpan<char> floatSpan3;
+
             int firstSpace = span.IndexOf(' ');
             int secondSpace = span.Slice(firstSpace + 1).IndexOf(' ') + firstSpace + 1;
 
-            var floatSpan1 = span.Slice(0, firstSpace);
-            var floatSpan2 = span.Slice(firstSpace + 1, secondSpace - firstSpace - 1);
-            var floatSpan3 = span.Slice(secondSpace);
+            if (CountSpanChar(span, ' ') == 2)
+            {
+                floatSpan1 = span.Slice(0, firstSpace);
+                floatSpan2 = span.Slice(firstSpace + 1, secondSpace - firstSpace - 1);
+                floatSpan3 = span.Slice(secondSpace);
+            }
+            else
+            {
+                int thirdSpace = span.Slice(secondSpace + 1).IndexOf(' ') + secondSpace + 1;
+
+                floatSpan1 = span.Slice(0, firstSpace);
+                floatSpan2 = span.Slice(firstSpace + 1, secondSpace - firstSpace - 1);
+                floatSpan3 = span.Slice(secondSpace + 1, thirdSpace - secondSpace - 1);
+            }
 
             return new Vector3(
                 float.Parse(floatSpan1, CultureInfo.InvariantCulture),
-                float.Parse(floatSpan2, CultureInfo.InvariantCulture), 
+                float.Parse(floatSpan2, CultureInfo.InvariantCulture),
                 float.Parse(floatSpan3, CultureInfo.InvariantCulture));
         }
 
@@ -467,60 +499,6 @@ namespace SampleGame.Engine.Utilities
             {
                 Console.WriteLine($"ParseTexture: the texture {textureName} was not found in the Assets folder.");
                 return null;
-            }
-        }
-
-        // Parses a line into a vector 3, expects 3 float values
-        private static Vector3 ParseVector3(string line, string name)
-        {
-            string[] data = line.Substring(name.Length).Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-            float f1, f2, f3;
-
-            if (!float.TryParse(data[0], NumberStyles.Float, CultureInfo.InvariantCulture, out f1) || !float.TryParse(data[1], NumberStyles.Float, CultureInfo.InvariantCulture, out f2) || !float.TryParse(data[2], NumberStyles.Float, CultureInfo.InvariantCulture, out f3))
-            {
-                Console.WriteLine($"ParseVector3: parsing error. Line: {line}");
-
-                return Vector3.Zero;
-            }
-
-            return new Vector3(f1, f2, f3);
-        }
-
-        // Parses a line into a vector 2, expects 2 float values
-        private static Vector2 ParseVector2(string line, string name)
-        {
-            string[] data = line.Substring(name.Length).Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-            float f1, f2;
-
-            if (!float.TryParse(data[0], NumberStyles.Float, CultureInfo.InvariantCulture, out f1) || !float.TryParse(data[1], NumberStyles.Float, CultureInfo.InvariantCulture, out f2))
-            {
-                Console.WriteLine($"ParseVector2: parsing error. Line: {line}");
-
-                return Vector2.Zero;
-            }
-
-            return new Vector2(f1, f2);
-        }
-
-        // Parses a string into a float. expects the line, the string and a reference to what it parses to
-        private static void ParseFloat(string line, string data, ref float output)
-        {
-            if (!float.TryParse(data, NumberStyles.Float, CultureInfo.InvariantCulture, out output))
-            {
-                Console.WriteLine($"ParseFloat: parsing error. Line: ({line})");
-                output = 0;
-            }
-        }
-
-        // Parses a string into a int. expects the line, the string and a reference to what it parses to
-        private static void ParseInt(string line, string data, ref int output)
-        {
-            if (!int.TryParse(data, NumberStyles.Integer, CultureInfo.InvariantCulture, out output))
-            {
-                Console.WriteLine($"ParseInt: parsing error. Line: ({line})");
-                output = 0;
             }
         }
     }
