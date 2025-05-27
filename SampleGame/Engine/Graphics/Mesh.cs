@@ -22,25 +22,25 @@ namespace SampleGame.Engine.Graphics
             Indices = uniqueData.Item2;
         }
 
-        public struct ComboKey
+        struct ComboKey
         {
-            public float x;
-            public float y;
-            public float z;
-            public float nx;
-            public float ny;
-            public float nz;
-            public float u;
-            public float v;
+            internal float x;
+            internal float y;
+            internal float z;
+            internal float nx;
+            internal float ny;
+            internal float nz;
+            internal float u;
+            internal float v;
         }
 
         // Returns a list of indices and a unique vertex buffer to draw by eliminating duplicates, expects a float array with vertex positions, normals and texture coordinates
         private static (float[], uint[]) GetIndices(float[] vertexData)
         {
 
-            Vector3[] vertices = new Vector3[vertexData.Length / 8 + 1];
-            Vector3[] normals = new Vector3[vertexData.Length / 8 + 1];
-            Vector2[] textureCoordinates = new Vector2[vertexData.Length / 8 + 1];
+            Vector3[] vertices = new Vector3[vertexData.Length / 8];
+            Vector3[] normals = new Vector3[vertexData.Length / 8];
+            Vector2[] texCoords = new Vector2[vertexData.Length / 8];
 
             List<uint> indices = new List<uint>();
             Dictionary<ComboKey, uint> foundCombos = new Dictionary<ComboKey, uint>();
@@ -73,7 +73,7 @@ namespace SampleGame.Engine.Graphics
 
                     vertices[vertexCount] = (new Vector3(comboKey.x, comboKey.y, comboKey.z));
                     normals[normalCount] = (new Vector3(comboKey.nx, comboKey.ny, comboKey.nz));
-                    textureCoordinates[textureCount] = (new Vector2(comboKey.u, comboKey.v));
+                    texCoords[textureCount] = (new Vector2(comboKey.u, comboKey.v));
 
                     vertexCount++;
                     normalCount++;
@@ -85,13 +85,19 @@ namespace SampleGame.Engine.Graphics
                 }
             }
 
-            return (GetInterleavedVertexData(vertices, textureCoordinates, normals), indices.ToArray());
+            // Resize the arrays so garbage collection can free unused memory later
+            Array.Resize(ref vertices, (int) indexCount);
+            Array.Resize(ref texCoords, (int) indexCount);
+            Array.Resize(ref normals, (int) indexCount);
+
+
+            return (GetInterleavedVertexData(vertices, texCoords, normals), indices.ToArray());
         }
 
         // Converts 3 lists of vertex data into a float array
-        private static float[] GetInterleavedVertexData(Vector3[] vertices, Vector2[] textureCoordinates, Vector3[] normals)
+        private static float[] GetInterleavedVertexData(Vector3[] vertices, Vector2[] texCoords, Vector3[] normals)
         {
-            bool HasTexCoords = textureCoordinates.Length > 0;
+            bool HasTexCoords = texCoords.Length > 0;
             bool hasNormals = normals.Length > 0 && normals != null;
 
             // 3 position, 3 normals, 2 texture coordinates
@@ -123,10 +129,10 @@ namespace SampleGame.Engine.Graphics
                     }
 
                     // Texture coordinates
-                    if (HasTexCoords && i < textureCoordinates.Length)
+                    if (HasTexCoords && i < texCoords.Length)
                     {
                         // Use zero UVs if not enough texture coordinates provided
-                        texCoord = i < textureCoordinates.Length ? textureCoordinates[i] : Vector2.Zero;
+                        texCoord = i < texCoords.Length ? texCoords[i] : Vector2.Zero;
                         vertexData[dataIndex + 6] = texCoord.X;
                         vertexData[dataIndex + 7] = texCoord.Y;
                     }

@@ -15,7 +15,7 @@
             LoadedAssets = new Dictionary<string, string[]>();
         }
 
-        public void LoadAsset(string filePath)
+        public void LoadWavefrontAsset(string filePath)
         {
             string fileName = Path.GetFileName(filePath);
             string extension = Path.GetExtension(filePath);
@@ -36,17 +36,38 @@
             }
         }
 
-        public void LoadFolder(string folderPath)
+        public void LoadWavefrontFolder(string folderPath)
         {
             string[] filePaths = Directory.GetFiles(folderPath);
 
             foreach (var path in filePaths)
             {
-                LoadAsset(path);
+                LoadWavefrontAsset(path);
             }
         }
 
-        public string[] GetAsset(string fileName)
+        public void UnloadWavefrontAsset(string fileName)
+        {
+            if (!LoadedAssets.Remove(fileName))
+            {
+                Console.Write($"UnloadWavefrontAsset: requested asset could not be unloaded as it was not found. ({fileName})");
+            }
+        }
+
+        public void UnloadWavefrontFolder(string folderPath)
+        {
+            string[] filePaths = Directory.GetFiles(folderPath);
+
+            foreach (var path in filePaths)
+            {
+                string fileName = Path.GetFileName(path);
+
+                // Remove found files from memory
+                LoadedAssets.Remove(fileName);
+            }
+        }
+
+        internal string[] GetAsset(string fileName)
         {
             if (LoadedAssets.TryGetValue(fileName, out var data))
             {

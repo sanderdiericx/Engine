@@ -13,15 +13,17 @@ namespace SampleGame
 
         void IGame.OnLoad()
         {
-            ResourceLoader.Instance.LoadFolder(@"Assets\erato");
+            ResourceLoader.Instance.LoadWavefrontFolder(@"Assets\san_miguel");
 
-            model = new Model("erato.obj", "erato.mtl");
+            model = new Model("san-miguel.obj", "san-miguel.mtl");
             model.InitializeModel();
 
             camera = new Camera(new Vector3(0, 0, -3), RenderEngine.WindowVariables.Aspect);
 
             model.SetModelPosition(-10, 0, 0);
             model.ScaleModel(0.5f);
+
+            ResourceLoader.Instance.UnloadWavefrontFolder(@"Assets\san_miguel");
         }
 
         void IGame.OnUnload()
