@@ -32,30 +32,39 @@ namespace SampleGame.Engine.Core
             cubeMapTexture = GL.GenTexture();
             GL.BindTexture(TextureTarget.TextureCubeMap, cubeMapTexture);
 
+            ImageResult[] images = new ImageResult[6];
+
+            // Read image files
             for (int i = 0; i < faces.Length; i++)
             {
-                // Read image file and pass to OpenGL
-                if (Directory.Exists(faces[i]))
+                if (File.Exists(faces[i]))
                 {
                     using (Stream stream = File.OpenRead(faces[i]))
                     {
-                        ImageResult image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
-
-                        GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, image.Width, image.Height, 0, OpenTK.Graphics.OpenGL4.PixelFormat.Rgba, PixelType.UnsignedByte, image.Data);
+                        images[i] = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Skybox: Face texture path could not be located. Skybox may be incomplete");
+                    Console.WriteLine($"Skybox: Face texture file could not be located. Skybox may be incomplete. ({faces[i]})");
                 }
             }
+
+            // Pass the imagedata to opengl
+            for (int i = 0; i < images.Length; i++)
+            {
+                TextureTarget faceTarget = TextureTarget.TextureCubeMapPositiveX + i;
+
+                GL.TexImage2D(faceTarget, 0, PixelInternalFormat.Rgba, images[i].Width, images[i].Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, images[i].Data);
+            }
+
 
             GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
             GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
             GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
             GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
             GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapR, (int)TextureWrapMode.ClampToEdge);
-
+            GL.GenerateMipmap(GenerateMipmapTarget.TextureCubeMap);
 
             // Assign VAO and VBO
             _vertexArrayObject = GL.GenVertexArray();
@@ -65,15 +74,11 @@ namespace SampleGame.Engine.Core
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
             GL.BufferData(BufferTarget.ArrayBuffer, _vertices.Length * sizeof(float), _vertices, BufferUsageHint.StaticDraw);
 
-            int stride = 5 * sizeof(float);
+            int stride = 3 * sizeof(float);
 
             var vertexLocation = _shader.GetAttribLocation("aPosition");
             GL.EnableVertexAttribArray(vertexLocation);
             GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false, stride, 0);
-
-            var texCoordLocation = _shader.GetAttribLocation("aTexCoord");
-            GL.EnableVertexAttribArray(texCoordLocation);
-            GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, stride, 6 * sizeof(float));
         }
 
         public void RenderSkybox(Camera camera)
@@ -81,8 +86,13 @@ namespace SampleGame.Engine.Core
             Matrix4 viewMatrix = camera.GetViewMatrix();
             Matrix4 projection = camera.GetProjectionMatrix();
 
+            Console.WriteLine(camera.Fov);
+
+
             // Remove translation
             viewMatrix.Row3 = new Vector4(0, 0, 0, viewMatrix.Row3.W);
+
+            GL.DepthFunc(DepthFunction.Lequal);
 
             // Disable depth writing
             GL.DepthMask(false);
@@ -90,61 +100,66 @@ namespace SampleGame.Engine.Core
             _shader.Use();
             _shader.SetMatrix4("view", viewMatrix);
             _shader.SetMatrix4("projection", projection);
+            _shader.SetInt("skybox", 1);
 
             // Draw skybox
             GL.BindVertexArray(_vertexArrayObject);
-            GL.ActiveTexture(TextureUnit.Texture0);
+
+            GL.ActiveTexture(TextureUnit.Texture1);
             GL.BindTexture(TextureTarget.TextureCubeMap, cubeMapTexture);
+            
             GL.DrawArrays(PrimitiveType.Triangles, 0, 36);
 
             // Re enable depth writing
             GL.DepthMask(true);
+
+            GL.DepthFunc(DepthFunction.Less);
         }
         private static float[] GetCubeVertices()
         {
             return new float[]
             {
-                -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-                0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-                0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-                0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-                -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+                -1.0f, -1.0f, -1.0f,
+                 1.0f, -1.0f, -1.0f,
+                 1.0f,  1.0f, -1.0f,
+                 1.0f,  1.0f, -1.0f,
+                -1.0f,  1.0f, -1.0f,
+                -1.0f, -1.0f, -1.0f,
 
-                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-                0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-                -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+                -1.0f, -1.0f,  1.0f,
+                 1.0f, -1.0f,  1.0f,
+                 1.0f,  1.0f,  1.0f,
+                 1.0f,  1.0f,  1.0f,
+                -1.0f,  1.0f,  1.0f,
+                -1.0f, -1.0f,  1.0f,
 
-                -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-                -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-                -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+                -1.0f,  1.0f,  1.0f,
+                -1.0f,  1.0f, -1.0f,
+                -1.0f, -1.0f, -1.0f,
+                -1.0f, -1.0f, -1.0f,
+                -1.0f, -1.0f,  1.0f,
+                -1.0f,  1.0f,  1.0f,
 
-                0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-                0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-                0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-                0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-                0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+                 1.0f,  1.0f,  1.0f,
+                 1.0f,  1.0f, -1.0f,
+                 1.0f, -1.0f, -1.0f,
+                 1.0f, -1.0f, -1.0f,
+                 1.0f, -1.0f,  1.0f,
+                 1.0f,  1.0f,  1.0f,
 
-                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-                0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-                0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-                0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+                -1.0f, -1.0f, -1.0f,
+                 1.0f, -1.0f, -1.0f,
+                 1.0f, -1.0f,  1.0f,
+                 1.0f, -1.0f,  1.0f,
+                -1.0f, -1.0f,  1.0f,
+                -1.0f, -1.0f, -1.0f,
 
-                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-                0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-                -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+                -1.0f,  1.0f, -1.0f,
+                 1.0f,  1.0f, -1.0f,
+                 1.0f,  1.0f,  1.0f,
+                 1.0f,  1.0f,  1.0f,
+                -1.0f,  1.0f,  1.0f,
+                -1.0f,  1.0f, -1.0f
             };
         }
     }

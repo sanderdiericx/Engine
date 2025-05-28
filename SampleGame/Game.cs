@@ -10,20 +10,23 @@ namespace SampleGame
     {
         Model model;
         Camera camera;
+        SkyBox skyBox;
 
         void IGame.OnLoad()
         {
-            ResourceLoader.Instance.LoadWavefrontFolder(@"Assets\san_miguel");
+            ResourceLoader.Instance.LoadWavefrontFolder(@"Assets\erato");
 
-            model = new Model("san-miguel.obj", "san-miguel.mtl");
+            model = new Model("erato.obj", "erato.mtl");
             model.InitializeModel();
 
-            camera = new Camera(new Vector3(0, 0, -3), RenderEngine.WindowVariables.Aspect);
+            camera = new Camera(new Vector3(0, 0, -3));
+
+            skyBox = new SkyBox();
 
             model.SetModelPosition(-10, 0, 0);
             model.ScaleModel(0.5f);
 
-            ResourceLoader.Instance.UnloadWavefrontFolder(@"Assets\san_miguel");
+            ResourceLoader.Instance.UnloadWavefrontFolder(@"Assets\erato");
         }
 
         void IGame.OnUnload()
@@ -33,6 +36,8 @@ namespace SampleGame
 
         void IGame.OnRenderFrame(FrameEventArgs args)
         {
+            skyBox.RenderSkybox(camera);
+
             RenderEngine.RenderModel(model, camera);
         }
 

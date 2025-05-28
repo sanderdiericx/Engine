@@ -14,15 +14,13 @@ namespace SampleGame.Engine.Core
         private float _yaw = -MathHelper.PiOver2;
         private float _fov = MathHelper.PiOver2;
 
-        public Camera(Vector3 position, float aspectRatio)
+        public Camera(Vector3 position)
         {
             Position = position;
-            AspectRatio = aspectRatio;
             _firstMove = true;
         }
 
         public Vector3 Position { get; set; }
-        public float AspectRatio { private get; set; }
         public Vector3 Front => _front;
         public Vector3 Up => _up;
         public Vector3 Right => _right;
@@ -69,7 +67,7 @@ namespace SampleGame.Engine.Core
 
         public Matrix4 GetProjectionMatrix()
         {
-            return Matrix4.CreatePerspectiveFieldOfView(_fov, AspectRatio, 0.01f, 100f);
+            return Matrix4.CreatePerspectiveFieldOfView(_fov, RenderEngine.WindowVariables.Aspect, 0.01f, 100f);
         }
 
 

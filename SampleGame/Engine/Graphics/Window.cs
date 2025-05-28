@@ -3,6 +3,7 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using SampleGame.Engine.Core;
+using static SampleGame.Engine.Core.Engine;
 using RenderEngine = SampleGame.Engine.Core.Engine;
 
 namespace SampleGame.Engine.Graphics
@@ -35,7 +36,9 @@ namespace SampleGame.Engine.Graphics
             _game.OnLoad();
 
             GL.Enable(EnableCap.Multisample);
-            GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+
+            GL.ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
             GL.Enable(EnableCap.DepthTest);
 
             CursorState = CursorState.Grabbed;
@@ -83,8 +86,10 @@ namespace SampleGame.Engine.Graphics
 
             _game.OnResize(e);
 
-            SizeX = Size.X;
-            SizeY = Size.Y;
+            // Update size and aspect
+            WindowVariables.SizeX = SizeX;
+            WindowVariables.SizeY = SizeY;
+            WindowVariables.Aspect = WindowVariables.SizeX / (float)WindowVariables.SizeY;
 
             GL.Viewport(0, 0, Size.X, Size.Y); // Make sure the viewport gets properly changed
         }
