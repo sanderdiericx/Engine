@@ -2,10 +2,8 @@
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
-using SampleGame.Engine.Utilities;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using SampleGame.Engine.Graphics;
-using System.Security.Cryptography.X509Certificates;
+using SampleGame.Engine.Utilities;
 using Window = SampleGame.Engine.Graphics.Window;
 
 namespace SampleGame.Engine.Core
@@ -79,28 +77,28 @@ namespace SampleGame.Engine.Core
             {
                 foreach (var (material, mesh) in model.meshes)
                 {
-                    Window.Shader.Use();
+                    Window.ModelShader.Use();
 
-                    Window.Shader.SetInt("texture0", 0);
+                    Window.ModelShader.SetInt("texture0", 0);
 
                     if (material.DiffuseMap != null)
                     {
-                        Window.Shader.SetBool("useTexture", true);
+                        Window.ModelShader.SetBool("useTexture", true);
 
                         material.DiffuseMap.Use(TextureUnit.Texture0);
                     }
-                    else 
+                    else
                     {
-                        Window.Shader.SetBool("useTexture", false);
+                        Window.ModelShader.SetBool("useTexture", false);
 
-                        Window.Shader.SetVector3("materialColor", material.Kd);
+                        Window.ModelShader.SetVector3("materialColor", material.Kd);
                     }
 
                     // Set uniforms
                     var world = model.transform * model.rotation * model.scale;
-                    Window.Shader.SetMatrix4("model", world);
-                    Window.Shader.SetMatrix4("view", camera.GetViewMatrix());
-                    Window.Shader.SetMatrix4("projection", camera.GetProjectionMatrix());
+                    Window.ModelShader.SetMatrix4("model", world);
+                    Window.ModelShader.SetMatrix4("view", camera.GetViewMatrix());
+                    Window.ModelShader.SetMatrix4("projection", camera.GetProjectionMatrix());
 
                     GL.BindVertexArray(mesh.VertexArrayObject);
                     GL.DrawElements(PrimitiveType.Triangles, mesh.Indices.Length, DrawElementsType.UnsignedInt, 0);
@@ -110,6 +108,38 @@ namespace SampleGame.Engine.Core
             {
                 Console.WriteLine("RenderModel: Model is not initialized.");
             }
+        }
+
+        public static void RenderSkybox(Skybox skybox, Camera camera)
+        {
+            Matrix4 viewMatrix = camera.GetViewMatrix();
+            Matrix4 projection = camera.GetProjectionMatrix();
+
+            // Remove translation
+            viewMatrix.Row3 = new Vector4(0, 0, 0, viewMatrix.Row3.W);
+
+            GL.DepthFunc(DepthFunction.Lequal);
+
+            // Disable depth writing
+            GL.DepthMask(false);
+
+            Window.SkyboxShader.Use();
+            Window.SkyboxShader.SetMatrix4("view", viewMatrix);
+            Window.SkyboxShader.SetMatrix4("projection", projection);
+            Window.SkyboxShader.SetInt("skybox", 1);
+
+            // Draw skybox
+            GL.BindVertexArray(skybox.vertexArrayObject);
+
+            GL.ActiveTexture(TextureUnit.Texture1);
+            GL.BindTexture(TextureTarget.TextureCubeMap, skybox.cubeMapTexture);
+
+            GL.DrawArrays(PrimitiveType.Triangles, 0, 36);
+
+            // Re enable depth writing
+            GL.DepthMask(true);
+
+            GL.DepthFunc(DepthFunction.Less);
         }
     }
 }

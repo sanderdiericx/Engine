@@ -10,21 +10,21 @@ namespace SampleGame
     {
         Model model;
         Camera camera;
-        SkyBox skyBox;
+        Skybox skyBox;
 
         void IGame.OnLoad()
         {
             ResourceLoader.Instance.LoadWavefrontFolder(@"Assets\erato");
 
             model = new Model("erato.obj", "erato.mtl");
-            model.InitializeModel();
+            model.Initialize();
 
             camera = new Camera(new Vector3(0, 0, -3));
 
-            skyBox = new SkyBox();
+            skyBox = new Skybox();
 
-            model.SetModelPosition(-10, 0, 0);
-            model.ScaleModel(0.5f);
+            model.SetPosition(-10, 0, 0);
+            model.Scale(0.5f);
 
             ResourceLoader.Instance.UnloadWavefrontFolder(@"Assets\erato");
         }
@@ -36,7 +36,7 @@ namespace SampleGame
 
         void IGame.OnRenderFrame(FrameEventArgs args)
         {
-            skyBox.RenderSkybox(camera);
+            RenderEngine.RenderSkybox(skyBox, camera);
 
             RenderEngine.RenderModel(model, camera);
         }

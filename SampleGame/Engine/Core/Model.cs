@@ -42,7 +42,7 @@ namespace SampleGame.Engine.Core
             meshes = ModelUtilities.GetMeshes(dataObj, vertices, normals, texCoords, materials);
         }
 
-        public void InitializeModel()
+        public void Initialize()
         {
             if (!isInitialized)
             {
@@ -66,76 +66,76 @@ namespace SampleGame.Engine.Core
             }
         }
 
-        public void RotateModelX(float degrees)
+        public void RotateX(float degrees)
         {
             rotation *= Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(degrees));
         }
 
-        public void RotateModelY(float degrees)
+        public void RotateY(float degrees)
         {
             rotation *= Matrix4.CreateRotationY((float)MathHelper.DegreesToRadians(degrees));
         }
 
-        public void RotateModelZ(float degrees)
+        public void RotateZ(float degrees)
         {
             rotation *= Matrix4.CreateRotationZ((float)MathHelper.DegreesToRadians(degrees));
         }
 
-        public void RotateModel(float xDegrees, float yDegrees, float zDegrees)
+        public void Rotate(float xDegrees, float yDegrees, float zDegrees)
         {
             rotation *= Matrix4.CreateRotationZ((float)MathHelper.DegreesToRadians(zDegrees)) * Matrix4.CreateRotationY((float)MathHelper.DegreesToRadians(yDegrees)) * Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(xDegrees));
         }
 
-        public void ResetModelRotation()
+        public void ResetRotation()
         {
             rotation = Matrix4.Identity;
         }
 
-        public void TransformModelX(float x)
+        public void TransformX(float x)
         {
             transform *= Matrix4.CreateTranslation(new Vector3(x, 0, 0));
         }
 
-        public void TransformModelY(float y)
+        public void TransformY(float y)
         {
             transform *= Matrix4.CreateTranslation(new Vector3(0, y, 0));
         }
 
-        public void TransformModelZ(float z)
+        public void TransformZ(float z)
         {
             transform *= Matrix4.CreateTranslation(new Vector3(0, 0, z));
         }
 
-        public void TransformModel(float x, float y, float z)
+        public void Transform(float x, float y, float z)
         {
             transform *= Matrix4.CreateTranslation(new Vector3(x, y, z));
         }
 
-        public void SetModelPosition(float x, float y, float z)
+        public void SetPosition(float x, float y, float z)
         {
             transform = Matrix4.Identity * Matrix4.CreateTranslation(new Vector3(x, y, z));
         }
 
-        public void ScaleModelX(float x)
+        public void ScaleX(float x)
         {
             scale *= Matrix4.CreateScale(new Vector3(x, 1, 1));
         }
 
-        public void ScaleModelY(float y)
+        public void ScaleY(float y)
         {
             scale *= Matrix4.CreateScale(new Vector3(1, y, 1));
         }
-        public void ScaleModelZ(float z)
+        public void ScaleZ(float z)
         {
             scale *= Matrix4.CreateScale(new Vector3(1, 1, z));
         }
 
-        public void ScaleModel(float scaleFactor)
+        public void Scale(float scaleFactor)
         {
             scale *= Matrix4.CreateScale(scaleFactor);
         }
 
-        public void SetModelScale(float x, float y, float z)
+        public void SetScale(float x, float y, float z)
         {
             scale = Matrix4.Identity * Matrix4.CreateScale(new Vector3(x, y, z));
         }

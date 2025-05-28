@@ -4,13 +4,13 @@ using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using SampleGame.Engine.Core;
 using static SampleGame.Engine.Core.Engine;
-using RenderEngine = SampleGame.Engine.Core.Engine;
 
 namespace SampleGame.Engine.Graphics
 {
     internal class Window : GameWindow
     {
-        public Shader Shader;
+        public Shader ModelShader;
+        public Shader SkyboxShader;
         private IGame _game;
 
         public int SizeX;
@@ -21,9 +21,8 @@ namespace SampleGame.Engine.Graphics
         {
             _game = game;
             
-            Shader = new Shader("Engine/Graphics/Shaders/shader.vert", "Engine/Graphics/Shaders/shader.frag");
-            Shader.Use();
-            Shader.SetInt("texture0", 0);
+            ModelShader = new Shader("Engine/Graphics/Shaders/shader.vert", "Engine/Graphics/Shaders/shader.frag");
+            SkyboxShader = new Shader("Engine/Graphics/Shaders/skybox.vert", "Engine/Graphics/Shaders/skybox.frag");
 
             SizeX = Size.X;
             SizeY = Size.Y;
@@ -67,10 +66,10 @@ namespace SampleGame.Engine.Graphics
         {
             base.OnUpdateFrame(args);
 
-            RenderEngine.WindowVariables.Keyboard = KeyboardState;
-            RenderEngine.WindowVariables.Mouse = MouseState;
+            WindowVariables.Keyboard = KeyboardState;
+            WindowVariables.Mouse = MouseState;
 
-            KeyboardState keyboard = RenderEngine.WindowVariables.Keyboard;
+            KeyboardState keyboard = WindowVariables.Keyboard;
 
             if (keyboard.IsKeyDown(Keys.Escape))
             {

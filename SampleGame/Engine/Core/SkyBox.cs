@@ -1,22 +1,19 @@
 ﻿using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
-using OpenTK.Windowing.GraphicsLibraryFramework;
-using SampleGame.Engine.Graphics;
+using SampleGame.Engine.Utilities;
 using StbImageSharp;
 
 namespace SampleGame.Engine.Core
 {
-    class SkyBox
+    public class Skybox
     {
-        private float[] _vertices;
-        private Shader _shader;
-        private int cubeMapTexture;
-        private int _vertexArrayObject;
-        private int _vertexBufferObject;
+        internal float[] vertices;
+        internal int cubeMapTexture;
+        internal int vertexArrayObject;
+        internal int vertexBufferObject;
 
-        public SkyBox()
+        public Skybox()
         {
-            _vertices = GetCubeVertices();
+            vertices = GraphicsUtilities.GetCubeVertices();
 
             // Define face textures
             string[] faces = {
@@ -25,9 +22,7 @@ namespace SampleGame.Engine.Core
                 "Assets/SkyBox/pz.png", "Assets/SkyBox/nz.png"
             };
 
-            // Create a skybox shader
-            _shader = new Shader("Engine/Graphics/Shaders/skybox.vert", "Engine/Graphics/Shaders/skybox.frag");
-
+           
             // Generate texture
             cubeMapTexture = GL.GenTexture();
             GL.BindTexture(TextureTarget.TextureCubeMap, cubeMapTexture);
@@ -67,100 +62,17 @@ namespace SampleGame.Engine.Core
             GL.GenerateMipmap(GenerateMipmapTarget.TextureCubeMap);
 
             // Assign VAO and VBO
-            _vertexArrayObject = GL.GenVertexArray();
-            GL.BindVertexArray(_vertexArrayObject);
+            vertexArrayObject = GL.GenVertexArray();
+            GL.BindVertexArray(vertexArrayObject);
 
-            _vertexBufferObject = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
-            GL.BufferData(BufferTarget.ArrayBuffer, _vertices.Length * sizeof(float), _vertices, BufferUsageHint.StaticDraw);
+            vertexBufferObject = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject);
+            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
 
             int stride = 3 * sizeof(float);
 
-            var vertexLocation = _shader.GetAttribLocation("aPosition");
-            GL.EnableVertexAttribArray(vertexLocation);
-            GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false, stride, 0);
-        }
-
-        public void RenderSkybox(Camera camera)
-        {
-            Matrix4 viewMatrix = camera.GetViewMatrix();
-            Matrix4 projection = camera.GetProjectionMatrix();
-
-            Console.WriteLine(camera.Fov);
-
-
-            // Remove translation
-            viewMatrix.Row3 = new Vector4(0, 0, 0, viewMatrix.Row3.W);
-
-            GL.DepthFunc(DepthFunction.Lequal);
-
-            // Disable depth writing
-            GL.DepthMask(false);
-
-            _shader.Use();
-            _shader.SetMatrix4("view", viewMatrix);
-            _shader.SetMatrix4("projection", projection);
-            _shader.SetInt("skybox", 1);
-
-            // Draw skybox
-            GL.BindVertexArray(_vertexArrayObject);
-
-            GL.ActiveTexture(TextureUnit.Texture1);
-            GL.BindTexture(TextureTarget.TextureCubeMap, cubeMapTexture);
-            
-            GL.DrawArrays(PrimitiveType.Triangles, 0, 36);
-
-            // Re enable depth writing
-            GL.DepthMask(true);
-
-            GL.DepthFunc(DepthFunction.Less);
-        }
-        private static float[] GetCubeVertices()
-        {
-            return new float[]
-            {
-                -1.0f, -1.0f, -1.0f,
-                 1.0f, -1.0f, -1.0f,
-                 1.0f,  1.0f, -1.0f,
-                 1.0f,  1.0f, -1.0f,
-                -1.0f,  1.0f, -1.0f,
-                -1.0f, -1.0f, -1.0f,
-
-                -1.0f, -1.0f,  1.0f,
-                 1.0f, -1.0f,  1.0f,
-                 1.0f,  1.0f,  1.0f,
-                 1.0f,  1.0f,  1.0f,
-                -1.0f,  1.0f,  1.0f,
-                -1.0f, -1.0f,  1.0f,
-
-                -1.0f,  1.0f,  1.0f,
-                -1.0f,  1.0f, -1.0f,
-                -1.0f, -1.0f, -1.0f,
-                -1.0f, -1.0f, -1.0f,
-                -1.0f, -1.0f,  1.0f,
-                -1.0f,  1.0f,  1.0f,
-
-                 1.0f,  1.0f,  1.0f,
-                 1.0f,  1.0f, -1.0f,
-                 1.0f, -1.0f, -1.0f,
-                 1.0f, -1.0f, -1.0f,
-                 1.0f, -1.0f,  1.0f,
-                 1.0f,  1.0f,  1.0f,
-
-                -1.0f, -1.0f, -1.0f,
-                 1.0f, -1.0f, -1.0f,
-                 1.0f, -1.0f,  1.0f,
-                 1.0f, -1.0f,  1.0f,
-                -1.0f, -1.0f,  1.0f,
-                -1.0f, -1.0f, -1.0f,
-
-                -1.0f,  1.0f, -1.0f,
-                 1.0f,  1.0f, -1.0f,
-                 1.0f,  1.0f,  1.0f,
-                 1.0f,  1.0f,  1.0f,
-                -1.0f,  1.0f,  1.0f,
-                -1.0f,  1.0f, -1.0f
-            };
+            GL.EnableVertexAttribArray(0);
+            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, stride, 0);
         }
     }
 }
