@@ -29,6 +29,8 @@ namespace SampleGame.Engine.Core
 
             ImageResult[] images = new ImageResult[6];
 
+            StbImage.stbi_set_flip_vertically_on_load(0);
+
             // Read image files
             for (int i = 0; i < faces.Length; i++)
             {
@@ -53,13 +55,11 @@ namespace SampleGame.Engine.Core
                 GL.TexImage2D(faceTarget, 0, PixelInternalFormat.Rgba, images[i].Width, images[i].Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, images[i].Data);
             }
 
-
             GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
             GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
             GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
             GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
             GL.TexParameter(TextureTarget.TextureCubeMap, TextureParameterName.TextureWrapR, (int)TextureWrapMode.ClampToEdge);
-            GL.GenerateMipmap(GenerateMipmapTarget.TextureCubeMap);
 
             // Assign VAO and VBO
             vertexArrayObject = GL.GenVertexArray();

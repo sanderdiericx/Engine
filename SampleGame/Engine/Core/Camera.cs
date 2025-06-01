@@ -55,7 +55,7 @@ namespace SampleGame.Engine.Core
             get => MathHelper.RadiansToDegrees(_fov);
             set
             {
-                var angle = MathHelper.Clamp(value, 1f, 90f); // Make sure the fov is within a reasonable range
+                var angle = MathHelper.Clamp(value, 1f, 180f); // Make sure the fov is within a reasonable range
                 _fov = MathHelper.DegreesToRadians(angle);
             }
         }
@@ -70,6 +70,10 @@ namespace SampleGame.Engine.Core
             return Matrix4.CreatePerspectiveFieldOfView(_fov, RenderEngine.WindowVariables.Aspect, 0.01f, 100f);
         }
 
+        public Matrix4 GetProjectionMatrix(float fov)
+        {
+            return Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(fov), RenderEngine.WindowVariables.Aspect, 0.01f, 100f);
+        }
 
         public void HandleCamera(float sensitivity)
         {

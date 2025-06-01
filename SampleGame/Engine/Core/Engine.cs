@@ -94,6 +94,7 @@ namespace SampleGame.Engine.Core
                         Window.ModelShader.SetVector3("materialColor", material.Kd);
                     }
 
+
                     // Set uniforms
                     var world = model.transform * model.rotation * model.scale;
                     Window.ModelShader.SetMatrix4("model", world);
@@ -112,11 +113,13 @@ namespace SampleGame.Engine.Core
 
         public static void RenderSkybox(Skybox skybox, Camera camera)
         {
-            Matrix4 viewMatrix = camera.GetViewMatrix();
-            Matrix4 projection = camera.GetProjectionMatrix();
+            Matrix4 viewMatrix = Matrix4.CreateRotationX(MathHelper.DegreesToRadians(camera.Pitch)) * Matrix4.CreateRotationY(-(MathHelper.DegreesToRadians(camera.Yaw)));
+            Matrix4 projection = camera.GetProjectionMatrix(170f);
 
             // Remove translation
-            viewMatrix.Row3 = new Vector4(0, 0, 0, viewMatrix.Row3.W);
+            viewMatrix.M14 = 0f;
+            viewMatrix.M24 = 0f;
+            viewMatrix.M34 = 0f;
 
             GL.DepthFunc(DepthFunction.Lequal);
 
