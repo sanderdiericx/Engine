@@ -2,7 +2,6 @@
 using OpenTK.Graphics.OpenGL4;
 using SampleGame.Engine.Content;
 using SampleGame.Engine.Graphics;
-using SampleGame.Engine.Utilities;
 
 namespace SampleGame.Engine.Core
 {
@@ -31,15 +30,15 @@ namespace SampleGame.Engine.Core
             string[] dataObj = ResourceLoader.Instance.GetWavefrontAsset(nameOBJ);
             string[] dataMtl = ResourceLoader.Instance.GetWavefrontAsset(nameMTL);
 
-            var output = ModelUtilities.ParseOBJ(dataObj);
+            var output = WavefrontLoader.ParseOBJ(dataObj);
 
             vertices = output.Item1;
             texCoords = output.Item2;
             normals = output.Item3;
 
-            materials = ModelUtilities.ParseMTL(dataMtl);
+            materials = WavefrontLoader.ParseMTL(dataMtl);
 
-            meshes = ModelUtilities.GetMeshes(dataObj, vertices, normals, texCoords, materials);
+            meshes = WavefrontLoader.GetMeshes(dataObj, vertices, normals, texCoords, materials);
         }
 
         public void Initialize()

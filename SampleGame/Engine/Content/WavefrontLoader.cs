@@ -7,9 +7,9 @@ using System;
 using System.Buffers;
 using OpenTK.Graphics.ES20;
 
-namespace SampleGame.Engine.Utilities
+namespace SampleGame.Engine.Content
 {
-    internal class ModelUtilities
+    internal class WavefrontLoader
     {
         public struct Corner()
         {
@@ -162,25 +162,25 @@ namespace SampleGame.Engine.Utilities
                     // Handles triangles, quads and polygons
                     for (int i = 1; i < cornerCount - 1; i++)
                     {
-                        currentVertices[vertexCount] = (vertices[foundCorners[0].Vertex]);
-                        currentNormals[normalCount] = (normals[foundCorners[0].Normal]);
-                        currentTexCoords[textureCount] = (texCoords[foundCorners[0].Texture]);
+                        currentVertices[vertexCount] = vertices[foundCorners[0].Vertex];
+                        currentNormals[normalCount] = normals[foundCorners[0].Normal];
+                        currentTexCoords[textureCount] = texCoords[foundCorners[0].Texture];
 
                         vertexCount++;
                         normalCount++;
                         textureCount++;
 
-                        currentVertices[vertexCount] = (vertices[foundCorners[i].Vertex]);
-                        currentNormals[normalCount] = (normals[foundCorners[i].Normal]);
-                        currentTexCoords[textureCount] = (texCoords[foundCorners[i].Texture]);
+                        currentVertices[vertexCount] = vertices[foundCorners[i].Vertex];
+                        currentNormals[normalCount] = normals[foundCorners[i].Normal];
+                        currentTexCoords[textureCount] = texCoords[foundCorners[i].Texture];
 
                         vertexCount++;
                         normalCount++;
                         textureCount++;
 
-                        currentVertices[vertexCount] = (vertices[foundCorners[i + 1].Vertex]);
-                        currentNormals[normalCount] = (normals[foundCorners[i + 1].Normal]);
-                        currentTexCoords[textureCount] = (texCoords[foundCorners[i + 1].Texture]);
+                        currentVertices[vertexCount] = vertices[foundCorners[i + 1].Vertex];
+                        currentNormals[normalCount] = normals[foundCorners[i + 1].Normal];
+                        currentTexCoords[textureCount] = texCoords[foundCorners[i + 1].Texture];
 
                         vertexCount++;
                         normalCount++;
@@ -220,9 +220,9 @@ namespace SampleGame.Engine.Utilities
             int.TryParse(normalSpan, out corner.Normal);
 
             // Convert negative indices into positive ones
-            corner.Vertex = (corner.Vertex > 0) ? corner.Vertex - 1 : vertices.Length + corner.Vertex - 1;
-            corner.Normal = (corner.Normal > 0) ? corner.Normal - 1 : normals.Length + corner.Normal - 1;
-            corner.Texture = (corner.Texture > 0) ? corner.Texture - 1 : texCoords.Length + corner.Texture - 1;
+            corner.Vertex = corner.Vertex > 0 ? corner.Vertex - 1 : vertices.Length + corner.Vertex - 1;
+            corner.Normal = corner.Normal > 0 ? corner.Normal - 1 : normals.Length + corner.Normal - 1;
+            corner.Texture = corner.Texture > 0 ? corner.Texture - 1 : texCoords.Length + corner.Texture - 1;
 
             return corner;
         }
