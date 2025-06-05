@@ -8,6 +8,7 @@ namespace SampleGame.Engine.Graphics
         private bool disposedValue = false;
         public int Handle;
 
+        // Compile 2 shaders and create handles for them
         public Shader(string vertexPath, string fragmentPath)
         {
             // Define 2 handles to the shaders

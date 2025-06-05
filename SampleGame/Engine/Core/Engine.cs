@@ -111,15 +111,27 @@ namespace SampleGame.Engine.Core
             }
         }
 
+        // Renders a skybox to the screen
         public static void RenderSkybox(Skybox skybox, Camera camera)
         {
-            Matrix4 viewMatrix = Matrix4.CreateRotationX(MathHelper.DegreesToRadians(camera.Pitch)) * Matrix4.CreateRotationY(-(MathHelper.DegreesToRadians(camera.Yaw)));
-            Matrix4 projection = camera.GetProjectionMatrix(170f);
+            // Compute a viewmatrix manually to prevent skybox from rolling
+            Vector3 front;
+            front.X = MathF.Cos(MathHelper.DegreesToRadians(camera.Pitch)) * MathF.Cos(MathHelper.DegreesToRadians(camera.Yaw));
+            front.Y = MathF.Sin(MathHelper.DegreesToRadians(camera.Pitch));
+            front.Z = MathF.Cos(MathHelper.DegreesToRadians(camera.Pitch)) * MathF.Sin(MathHelper.DegreesToRadians(camera.Yaw));
+            front = Vector3.Normalize(front);
 
-            // Remove translation
-            viewMatrix.M14 = 0f;
-            viewMatrix.M24 = 0f;
-            viewMatrix.M34 = 0f;
+            Vector3 right = Vector3.Normalize(Vector3.Cross(front, Vector3.UnitY));
+            Vector3 up = Vector3.Normalize(Vector3.Cross(right, front));
+            
+            Matrix4 viewMatrix = new Matrix4(
+                new Vector4(right, 0),
+                new Vector4(up, 0),
+                new Vector4(-front, 0),
+                new Vector4(0, 0, 0, 1)
+            );
+
+            Matrix4 projection = camera.GetProjectionMatrix(170f);
 
             GL.DepthFunc(DepthFunction.Lequal);
 

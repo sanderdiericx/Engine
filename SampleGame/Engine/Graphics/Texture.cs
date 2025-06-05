@@ -13,6 +13,7 @@ namespace SampleGame.Engine.Graphics
             Handle = glHandle;
         }
 
+        // Load a texture from a file and generate a handle for it
         public static Texture LoadFromFile(string path)
         {
             // Generate handle

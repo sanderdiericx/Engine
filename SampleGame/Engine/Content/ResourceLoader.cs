@@ -19,6 +19,7 @@ namespace SampleGame.Engine.Content
             LoadedSkyboxes = new Dictionary<string, ImageResult[]>();
         }
 
+
         public void LoadSkybox(string skyBoxName, string folderPath, string px, string nx, string py, string ny, string pz, string nz)
         {
             string[] faces = {
