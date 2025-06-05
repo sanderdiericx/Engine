@@ -28,8 +28,8 @@ namespace SampleGame.Engine.Core
             transform = Matrix4.Identity;
             scale = Matrix4.Identity;
 
-            string[] dataObj = ResourceLoader.Instance.GetAsset(nameOBJ);
-            string[] dataMtl = ResourceLoader.Instance.GetAsset(nameMTL);
+            string[] dataObj = ResourceLoader.Instance.GetWavefrontAsset(nameOBJ);
+            string[] dataMtl = ResourceLoader.Instance.GetWavefrontAsset(nameMTL);
 
             var output = ModelUtilities.ParseOBJ(dataObj);
 

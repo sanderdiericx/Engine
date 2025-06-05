@@ -1,4 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL4;
+using SampleGame.Engine.Content;
 using SampleGame.Engine.Utilities;
 using StbImageSharp;
 
@@ -11,41 +12,15 @@ namespace SampleGame.Engine.Core
         internal int vertexArrayObject;
         internal int vertexBufferObject;
 
-        public Skybox()
+        public Skybox(string skyBoxName)
         {
             vertices = GraphicsUtilities.GetCubeVertices();
 
-            // Define face textures
-            string[] faces = {
-                "Assets/SkyBox/px.png", "Assets/SkyBox/nx.png",
-                "Assets/SkyBox/py.png", "Assets/SkyBox/ny.png",
-                "Assets/SkyBox/pz.png", "Assets/SkyBox/nz.png"
-            };
+            ImageResult[] images = ResourceLoader.Instance.GetSkybox(skyBoxName);
 
-           
             // Generate texture
             cubeMapTexture = GL.GenTexture();
             GL.BindTexture(TextureTarget.TextureCubeMap, cubeMapTexture);
-
-            ImageResult[] images = new ImageResult[6];
-
-            StbImage.stbi_set_flip_vertically_on_load(0);
-
-            // Read image files
-            for (int i = 0; i < faces.Length; i++)
-            {
-                if (File.Exists(faces[i]))
-                {
-                    using (Stream stream = File.OpenRead(faces[i]))
-                    {
-                        images[i] = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
-                    }
-                }
-                else
-                {
-                    Console.WriteLine($"Skybox: Face texture file could not be located. Skybox may be incomplete. ({faces[i]})");
-                }
-            }
 
             // Pass the imagedata to opengl
             for (int i = 0; i < images.Length; i++)

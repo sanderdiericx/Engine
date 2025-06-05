@@ -14,20 +14,21 @@ namespace SampleGame
 
         void IGame.OnLoad()
         {
-            ResourceLoader.Instance.LoadWavefrontFolder(@"Assets\san_miguel");
+            ResourceLoader.Instance.LoadWavefrontFolder(@"Assets\erato");
+            ResourceLoader.Instance.LoadSkybox("blue_sky", @"Assets\SkyBox\", "px.png", "nx.png", "py.png", "ny.png", "pz.png", "nz.png");
 
-            model = new Model("san-miguel.obj", "san-miguel.mtl");
+            model = new Model("erato.obj", "erato.mtl");
             model.Initialize();
 
             camera = new Camera(new Vector3(0, 0, -3));
             camera.Fov = 90;
 
-            skyBox = new Skybox();
+            skyBox = new Skybox("blue_sky");
 
             model.SetPosition(-10, 0, 0);
             model.Scale(0.5f);
 
-            ResourceLoader.Instance.UnloadWavefrontFolder(@"Assets\san_miguel");
+            ResourceLoader.Instance.UnloadWavefrontFolder(@"Assets\erato");
         }
 
         void IGame.OnUnload()
