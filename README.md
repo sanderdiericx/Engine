@@ -19,7 +19,7 @@ A simple, in development 3D game engine using OpenTK (OpenGL c# wrapper)
 
 ## Installation
 Currently you need to clone this repository and run it in Visual Studio.
-Precompiled binaries will be provided in a future release.
+Nuget packages be provided in a future release.
 
 ## Usage
 Before we start, it is recommended to have an assets folder in your project directory. This way you can easily reference your files.
@@ -42,41 +42,16 @@ namespace SampleGame
 }
 
 ```
-The Game type referenced is the class that will interact with the IGame interface. This grants access to core window events that allow us to control our game. It has 5 mandatory methods that we must include for it to work properly. (OnLoad, OnUnload, OnRenderFrame, OnUpdateFrame, OnResize) a new Game class would look something like this:
+The Game type referenced is the class that will interact with the IGame interface. This grants access to core window events that allow us to control our game. It has 5 mandatory methods that we must include for it to work properly. (OnLoad, OnUnload, OnRenderFrame, OnUpdateFrame, OnResize)
 
 ```csharp
-using OpenTK.Windowing.Common;
-using SampleGame.Engine.Core;
-
-namespace SampleGame
+public interface IGame
 {
-    class Game : IGame
-    {
-        void IGame.OnLoad()
-        {
-
-        }
-
-        void IGame.OnUnload()
-        {
-
-        }
-
-        void IGame.OnRenderFrame(FrameEventArgs args)
-        {
-
-        }
-
-        void IGame.OnUpdateFrame(FrameEventArgs args)
-        {
-
-        }
-
-        void IGame.OnResize(ResizeEventArgs e)
-        {
-
-        }
-    }
+    void OnLoad();
+    void OnUnload();
+    void OnRenderFrame(FrameEventArgs args);
+    void OnUpdateFrame(FrameEventArgs args);
+    void OnResize(ResizeEventArgs e);
 }
 ```
 
@@ -97,8 +72,7 @@ We can also load entire folders at once. Like this:
 ```csharp
 ResourceLoader.Instance.LoadWavefrontFolder(@"Assets\aModelFolder\");
 ```
-
-This will search through the given directory and load all Wavefront files into memory. Any other files it will skip. It is also possible to unload Wavefront files to free memory (Note unloading has to wait on GC so it's usually not instant). This is done in a similar way:
+It is also possible to unload Wavefront files to free memory (Note unloading has to wait on GC so it's usually not instant). This is done in a similar way:
 
 ```csharp
 void IGame.OnLoad()
@@ -250,6 +224,37 @@ namespace SampleGame
 
 ```
 
+## Model format
+Currently, only Wavefront models are supported (OBJ, MTL).
+
+An OBJ file contains vertex data, and how to build the geometry of the model. Here is an example:
+
+```obj
+# Define the vertices
+v 0.0 0.0 0.0
+v 1.0 0.0 0.0
+v 1.0 1.0 0.0
+v 0.0 1.0 0.0
+v 0.5 0.5 1.0
+
+# Define faces
+f 1 2 3
+f 1 3 4
+f 1 2 5
+f 2 3 5
+f 3 4 5
+f 4 1 5
+```
+An MTL file contains material data, this incudes things like textures and material properties. Here is a very simple example of what that might look like:
+
+```mtl
+newmtl pyramidMaterial
+Ka 0.2 0.2 0.2    # Ambient color
+Kd 0.8 0.2 0.2    # Diffuse color
+Ks 1.0 1.0 1.0    # Specular color
+Ns 50.0           # Shininess
+```
+
 ## Final notes
 This project is still in development so expect bugs and inconsistencies.
 
@@ -258,7 +263,7 @@ This project is still in development so expect bugs and inconsistencies.
 - Transformation/rotation/scaling values must be very small
 - High memory usage with certain models
 - Slow loading with certain models (Use release mode for faster loading)
-- While loading it may require you to press enter on the console (You know this when cpu utilisation for the program is at 0%)
+- While loading it may require you to press enter on the console (You know this when CPU utilisation for the program is at 0%)
 
 ## Screenshots
 
@@ -271,6 +276,6 @@ San Miguel
 Erato
 ![test 6_5_2025 11_18_44 PM](https://github.com/user-attachments/assets/e748faa4-4cdc-4f95-9d7b-fa4c773b3e01)
 
-
+Models are sourced from Casual Effects (July.2017). Retrieved from https://casual-effects.com/data/
 
 
