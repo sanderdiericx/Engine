@@ -225,7 +225,7 @@ namespace SampleGame
 ```
 
 ## Model format
-Currently, only Wavefront models are supported (OBJ, MTL).
+Currently, only Wavefront models are supported (OBJ, MTL). A decent source for them is: https://free3d.com/3d-models/obj?page=1
 
 An OBJ file contains vertex data, and how to build the geometry of the model. Here is an example:
 
