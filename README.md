@@ -276,6 +276,6 @@ San Miguel
 Erato
 ![test 6_5_2025 11_18_44 PM](https://github.com/user-attachments/assets/e748faa4-4cdc-4f95-9d7b-fa4c773b3e01)
 
-Models are sourced from Casual Effects (July.2017). Retrieved from https://casual-effects.com/data/
+Models sourced from: Morgan McGuire, Computer Graphics Archive, July 2017 (https://casual-effects.com/data)
 
 
