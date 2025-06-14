@@ -1,6 +1,6 @@
 # Engine
 
-A simple, in development 3D game engine using OpenTK (OpenGL c# wrapper)
+A simple, in development 3D game engine using OpenTK (OpenGL C# wrapper)
 
 ## Features
 - OBJ + MTL mesh loading
@@ -19,7 +19,7 @@ A simple, in development 3D game engine using OpenTK (OpenGL c# wrapper)
 
 ## Installation
 Currently you need to clone this repository and run it in Visual Studio.
-Nuget packages be provided in a future release.
+Nuget packages will be provided in a future release.
 
 ## Usage
 Before we start, it is recommended to have an assets folder in your project directory. This way you can easily reference your files.
